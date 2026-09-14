@@ -1,0 +1,54 @@
+{
+	"name": "ModuxV3",
+	"tree": {
+		"$className": "DataModel",
+		"Lighting": {},
+		"ReplicatedFirst": {},
+		"ReplicatedStorage": {
+			"shared": {
+				"$className": "Folder",
+				"$ignoreUnknownInstances": false,
+				"Modux": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Modux/shared"
+					}
+				},
+				"Utils": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Utils/Shared"
+					}
+				}
+			}
+		},
+		"RobloxPluginGuiService": {},
+		"ServerScriptService": {},
+		"ServerStorage": {},
+		"SoundService": {},
+		"StarterGui": {},
+		"StarterPack": {},
+		"StarterPlayer": {
+			"StarterCharacterScripts": {},
+			"StarterPlayerScripts": {
+				"client": {
+					"$className": "Folder",
+					"$ignoreUnknownInstances": false,
+					"Modux": {
+						"$ignoreUnknownInstances": false,
+						"$path": {
+							"optional": "src/Modux/client"
+						}
+					},
+					"Types": {
+						"$ignoreUnknownInstances": false,
+						"$path": {
+							"optional": "src/Types/client"
+						}
+					}
+				}
+			}
+		},
+		"Workspace": {}
+	}
+}

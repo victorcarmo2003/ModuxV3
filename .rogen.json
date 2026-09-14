@@ -1,0 +1,15 @@
+{
+	"source": [
+		"src"
+	],
+	"luau": {
+		"output": "default.project.json",
+		"build": "src"
+	},
+	"project": {
+		"name": "ModuxV3",
+		"tree": {
+			"$className": "DataModel"
+		}
+	}
+}
