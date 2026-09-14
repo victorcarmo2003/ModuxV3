@@ -1,0 +1,3 @@
+const Loader = {}
+
+return Loader
