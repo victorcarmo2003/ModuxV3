@@ -1,7 +1,7 @@
 --!strict
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Classes = require(ReplicatedStorage.shared.Modux.Classes)
-const Zombie = Classes.Controller("Zombie")
+local StarterPlayer = game:GetService("StarterPlayer")
+local Modux = require(StarterPlayer.StarterPlayerScripts.client.Modux)
+const Zombie = Modux.Controller("Zombie")
 
 function Zombie.Heal(self, Amount: number)
 	self.Dependencies.Skeleton:KillPlayer()

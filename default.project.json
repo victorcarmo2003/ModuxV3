@@ -8,18 +8,6 @@
 			"shared": {
 				"$className": "Folder",
 				"$ignoreUnknownInstances": false,
-				"Classes": {
-					"$ignoreUnknownInstances": false,
-					"$path": {
-						"optional": "src/Classes/shared"
-					}
-				},
-				"Entity": {
-					"$ignoreUnknownInstances": false,
-					"$path": {
-						"optional": "src/Entity/shared"
-					}
-				},
 				"Modux": {
 					"$path": {
 						"optional": "src/Modux/shared"
@@ -32,7 +20,6 @@
 					}
 				},
 				"Utils": {
-					"$ignoreUnknownInstances": false,
 					"$path": {
 						"optional": "src/Utils/Shared"
 					}
@@ -44,10 +31,21 @@
 			"server": {
 				"$className": "Folder",
 				"$ignoreUnknownInstances": false,
-				"Modux": {
+				"Components": {
 					"$ignoreUnknownInstances": false,
 					"$path": {
+						"optional": "src/Components/server"
+					}
+				},
+				"Modux": {
+					"$path": {
 						"optional": "src/Modux/server"
+					}
+				},
+				"Services": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Services/server"
 					}
 				}
 			}
@@ -62,8 +60,25 @@
 				"client": {
 					"$className": "Folder",
 					"$ignoreUnknownInstances": false,
-					"Modux": {
+					"Classes": {
 						"$ignoreUnknownInstances": false,
+						"$path": {
+							"optional": "src/Classes/client"
+						}
+					},
+					"Components": {
+						"$ignoreUnknownInstances": false,
+						"$path": {
+							"optional": "src/Components/client"
+						}
+					},
+					"Entity": {
+						"$ignoreUnknownInstances": false,
+						"$path": {
+							"optional": "src/Entity/client"
+						}
+					},
+					"Modux": {
 						"$path": {
 							"optional": "src/Modux/client"
 						}

@@ -1,157 +1,91 @@
 <#
 .SYNOPSIS
-    Varre o projeto com o luau-analyze upstream, fora do Roblox Studio.
+    Varre o projeto com o luau-lsp, fora do Roblox Studio.
 
 .DESCRIPTION
-    O luau-analyze nao conhece `game:GetService` nem `require(ReplicatedStorage...)`,
-    entao este script monta um espelho plano dos modules (um arquivo por module,
-    nome unico), apaga as linhas de GetService e troca os require por caminho
-    relativo. Depois roda a analise em cada arquivo do espelho.
+    Roda o MESMO motor do editor sobre os arquivos REAIS, usando o sourcemap do
+    Rojo para resolver `require(ReplicatedStorage...)` e as definitions do
+    Roblox para conhecer `Instance`, `CFrame` e afins.
 
-    Saida vazia num arquivo = passou. Mas arquivo limpo NAO prova nada: quebre
-    de proposito e confirme que acusa, senao voce tem silencio em vez de tipagem.
+    A versao anterior montava um espelho plano com os require reescritos. Isso
+    parou de funcionar quando a arvore cresceu: com Classes em tres lugares e
+    Manifest em dois, os nomes colidiam e o espelho inventava erro em arquivo
+    correto. Sourcemap resolve pelo caminho de verdade, sem copiar nada.
 
-.PARAMETER Src
-    Pasta do codigo. Padrao: src
-
-.PARAMETER Out
-    Pasta do espelho. Padrao: .luau-mirror (ignorada pelo git)
-
-.PARAMETER Luau
-    Caminho do luau-analyze.exe. Padrao: .\luau-analyze.exe
-
-.PARAMETER Detail
-    Mostra as mensagens de erro em vez so da contagem.
+    Saida vazia NAO prova nada sozinha: quebre de proposito e confirme que
+    acusa, senao voce tem silencio em vez de tipagem.
 
 .PARAMETER Filter
-    Analisa so os arquivos cujo nome bate com esse curinga. Ex: -Filter Manifest*
+    Analisa so os arquivos cujo caminho bate com esse curinga.
 
-.EXAMPLE
-    .\tools\analyze.ps1
-
-.EXAMPLE
-    .\tools\analyze.ps1 -Filter Controller.luau -Detail
+.PARAMETER Detail
+    Mostra as mensagens em vez so da contagem.
 
 .NOTES
-    Instalar o binario (uma vez, na raiz do repo):
-
-        Invoke-WebRequest -Uri "https://github.com/luau-lang/luau/releases/download/0.716/luau-windows.zip" -OutFile luau.zip
-        Expand-Archive -Path luau.zip -DestinationPath . -Force
-        Remove-Item luau.zip
-
-    Precisa ser 0.712 ou mais novo: antes disso o `const` aparece como erro de
-    sintaxe. E sem --fflags=LuauSolverV2=true as type functions nao rodam.
+    Precisa do rojo (rokit add rojo-rbx/rojo) e da extensao luau-lsp instalada.
 #>
 param(
     [string]$Src    = "src",
-    [string]$Out    = ".luau-mirror",
-    [string]$Luau   = ".\luau-analyze.exe",
     [string]$Filter = "*",
+    [string]$Defs   = "",
     [switch]$Detail
 )
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path -LiteralPath $Luau)) {
-    Write-Error "luau-analyze nao encontrado em '$Luau'. Veja as notas no topo deste script."
+# --- motor e definitions ----------------------------------------------------
+if (-not $Defs) {
+    $candidatos = @(
+        "$env:APPDATA/Code/User/globalStorage/johnnymorganz.luau-lsp/globalTypes.PluginSecurity.d.luau",
+        "$env:APPDATA/Antigravity/User/globalStorage/johnnymorganz.luau-lsp/globalTypes.PluginSecurity.d.luau"
+    )
+    $Defs = $candidatos | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+}
+
+$lsp = Get-ChildItem "$env:USERPROFILE/.vscode/extensions" -Filter "johnnymorganz.luau-lsp-*" -Directory -ErrorAction SilentlyContinue |
+    Sort-Object Name -Descending | Select-Object -First 1
+if (-not $lsp) {
+    Write-Error "luau-lsp nao encontrado. Instale a extensao johnnymorganz.luau-lsp no VS Code."
+    exit 1
+}
+$motor = Join-Path $lsp.FullName "bin/server.exe"
+
+# --- sourcemap --------------------------------------------------------------
+# Regerado toda rodada: sourcemap velho aponta para arquivo que mudou de lugar,
+# e o sintoma e "Unknown require" em codigo que esta certo.
+# O rogen GERA o default.project.json a partir da estrutura de pastas. Sem
+# rodar ele antes, o sourcemap sai de um project file velho e o sintoma e
+# "Unknown require" em codigo que esta certo.
+& rogen build 2>&1 | Out-Null
+
+$mapa = "sourcemap.json"
+& rojo sourcemap default.project.json -o $mapa 2>&1 | Out-Null
+if (-not (Test-Path -LiteralPath $mapa)) {
+    Write-Error "rojo nao gerou o sourcemap. Instale com: rokit add rojo-rbx/rojo"
     exit 1
 }
 
-New-Item -ItemType Directory -Force -Path $Out | Out-Null
+Write-Host "motor: luau-lsp + sourcemap do Rojo + definitions do Roblox" -ForegroundColor DarkGray
 
-# --- monta o espelho -------------------------------------------------------
-# Espelho plano. Nome unico e obrigatorio: o projeto tem tres `Type.luau`
-# (Zombie, Skeleton, Default) e, achatados, um sobrescreve o outro — o sintoma
-# e "Cannot add property X" num modulo que esta certo, porque ele recebeu a
-# folha do vizinho. Quando o nome base colide, o do pai entra na frente:
-# Zombie/Type.luau -> ZombieType.luau.
-Remove-Item -Recurse -Force -LiteralPath $Out -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $Out | Out-Null
+# --- analisa ----------------------------------------------------------------
+$arquivos = Get-ChildItem -Path $Src -Recurse -Filter *.luau |
+    Where-Object { $_.FullName -like $Filter }
 
-$arquivos = Get-ChildItem -Path $Src -Recurse -Filter *.luau
+$args = @("analyze", "--sourcemap=$mapa", "--flag:LuauSolverV2=true")
+if ($Defs) { $args += "--definitions=$Defs" }
+$args += $arquivos.FullName
 
-# nome base, do jeito que o Rojo resolve
-function Get-Base($f) {
-    if ($f.Name -eq "init.luau") { $f.Directory.Name } else { [IO.Path]::GetFileNameWithoutExtension($f.Name) }
+$saida = & $motor @args 2>&1 | Where-Object { $_ -notmatch '^\[INFO\]' }
+
+$erros = @($saida | Select-String 'TypeError|SyntaxError')
+$ciclos = @($saida | Select-String 'Cyclic module dependency')
+
+if ($Detail -and $erros.Count -gt 0) {
+    $erros | ForEach-Object { Write-Host "  $_" }
+}
+if ($ciclos.Count -gt 0) {
+    Write-Host "$($ciclos.Count) require ciclico(s)." -ForegroundColor Red
+    Write-Host "Lembre: ciclo degrada os genericos exportados, entao a tipagem colapsa junto." -ForegroundColor Red
 }
 
-$contagem = @{}
-foreach ($f in $arquivos) {
-    $b = Get-Base $f
-    $contagem[$b] = 1 + ($contagem[$b] ?? 0)
-}
-# nomes que precisam de desempate
-$colide = @($contagem.Keys | Where-Object { $contagem[$_] -gt 1 })
-
-function Get-Unico($f) {
-    $b = Get-Base $f
-    if ($colide -contains $b) { "$($f.Directory.Name)$b" } else { $b }
-}
-
-foreach ($f in $arquivos) {
-    $destino = Join-Path $Out "$(Get-Unico $f).luau"
-    $pasta   = $f.Directory.Name
-
-    (Get-Content -LiteralPath $f.FullName) |
-        ForEach-Object {
-            # Servico vira stub `any` em vez de sumir: assim as linhas que
-            # derivam dele (StarterPlayer.StarterPlayerScripts.client) ainda
-            # resolvem, so que sem tipo.
-            $l = $_ -creplace 'game:GetService\([^)]*\)', '(nil :: any)'
-
-            # `-creplace` e case-SENSITIVE de proposito. Com o `-replace`
-            # normal, `normalizeRequire(value: any)` casa com `Require(...)` e
-            # vira `normalizerequire("./any")` — erro de sintaxe num arquivo
-            # que esta certo.
-            [regex]::Replace($l, 'require\(([^)]*)\)', {
-                param($m)
-                $partes = $m.Groups[1].Value -split '\.' |
-                    ForEach-Object { $_.Trim() } |
-                    Where-Object { $_ -match '^[A-Za-z_][A-Za-z0-9_]*$' }
-                if ($partes.Count -eq 0) { return $m.Value }
-
-                $ultimo = $partes[-1]
-                if ($colide -contains $ultimo) {
-                    # desempata pelo dono: `script.Type` e do proprio arquivo,
-                    # `....Entity.Zombie.Type` traz o dono no penultimo.
-                    $dono = if ($partes.Count -ge 2 -and $partes[-2] -ne 'script') { $partes[-2] } else { $pasta }
-                    "require(`"./$dono$ultimo`")"
-                } else {
-                    "require(`"./$ultimo`")"
-                }
-            }, [Text.RegularExpressions.RegexOptions]::None)
-        } |
-        Set-Content -LiteralPath $destino -Encoding utf8
-}
-
-# --- analisa ---------------------------------------------------------------
-$totalErros  = 0
-$totalCiclos = 0
-
-$linhas = Get-ChildItem -Path $Out -Filter *.luau |
-    Where-Object { $_.Name -like $Filter } |
-    ForEach-Object {
-        $saida  = & $Luau --mode=strict --fflags=LuauSolverV2=true $_.FullName 2>&1
-        $ciclos = @($saida | Select-String 'Cyclic module dependency').Count
-        $erros  = @($saida | Select-String 'TypeError|SyntaxError').Count
-
-        $script:totalErros  += $erros
-        $script:totalCiclos += $ciclos
-
-        if ($Detail -and ($erros -gt 0 -or $ciclos -gt 0)) {
-            Write-Host "--- $($_.Name) ---" -ForegroundColor Yellow
-            $saida | Select-String 'TypeError|SyntaxError' | Select-Object -First 10 | ForEach-Object {
-                Write-Host "  $_"
-            }
-        }
-
-        [PSCustomObject]@{ Arquivo = $_.Name; Ciclos = $ciclos; Erros = $erros }
-    }
-
-$linhas | Format-Table -AutoSize
-
-if ($totalCiclos -gt 0) {
-    Write-Host "$totalCiclos require ciclico(s). Rode com -Detail para ver a cadeia." -ForegroundColor Red
-    Write-Host "Lembre: ciclo tambem degrada os genericos exportados, entao a tipagem colapsa junto." -ForegroundColor Red
-}
-Write-Host "total: $totalErros erro(s), $totalCiclos ciclo(s)"
+Write-Host "total: $($erros.Count) erro(s), $($ciclos.Count) ciclo(s)"

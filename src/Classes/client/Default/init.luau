@@ -1,8 +1,8 @@
 --!strict
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Classes = require(ReplicatedStorage.shared.Modux.Classes)
+local StarterPlayer = game:GetService("StarterPlayer")
+local Modux = require(StarterPlayer.StarterPlayerScripts.client.Modux)
 -- Require na forma de string simples; a forma de array tambem vale.
-const Default = Classes.Controller("Default", { Require = "Zombie" })
+const Default = Modux.Controller("Default", { Require = "Zombie" })
 
 function Default.Reload(self)
 	self.Dependencies.Zombie:Heal(25)
