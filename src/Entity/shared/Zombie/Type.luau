@@ -1,6 +1,7 @@
 --!strict
--- GERADO a partir do corpo. Nao editar a mao.
--- Folha: requer nada, para que dependencia mutua entre controllers funcione.
+-- GERADO por tools/modux_emit.py a partir de src/Entity/shared/Zombie/init.luau
+-- NAO EDITAR A MAO: a proxima geracao sobrescreve.
+
 export type Public = {
 	Heal: (self: Public, Amount: number) -> (),
 }
