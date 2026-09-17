@@ -37,6 +37,7 @@
         {
             "label": "dev",
             "dependsOn": [
+                "rogen watch",
                 "rojo serve",
                 "sourcemap watch"
             ],

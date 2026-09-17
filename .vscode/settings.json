@@ -18,5 +18,5 @@
     "editor.formatOnSave": true,
     "syncteam.port": 1550,
     "discord.enabled": true,
-    "discord.idleTimeout": 2,
+    "discord.idleTimeout": 0,
 }

@@ -8,10 +8,27 @@
 			"shared": {
 				"$className": "Folder",
 				"$ignoreUnknownInstances": false,
-				"Modux": {
+				"Classes": {
 					"$ignoreUnknownInstances": false,
 					"$path": {
+						"optional": "src/Classes/shared"
+					}
+				},
+				"Entity": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Entity/shared"
+					}
+				},
+				"Modux": {
+					"$path": {
 						"optional": "src/Modux/shared"
+					}
+				},
+				"Types": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Types/shared"
 					}
 				},
 				"Utils": {
@@ -23,7 +40,18 @@
 			}
 		},
 		"RobloxPluginGuiService": {},
-		"ServerScriptService": {},
+		"ServerScriptService": {
+			"server": {
+				"$className": "Folder",
+				"$ignoreUnknownInstances": false,
+				"Modux": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Modux/server"
+					}
+				}
+			}
+		},
 		"ServerStorage": {},
 		"SoundService": {},
 		"StarterGui": {},
@@ -38,12 +66,6 @@
 						"$ignoreUnknownInstances": false,
 						"$path": {
 							"optional": "src/Modux/client"
-						}
-					},
-					"Types": {
-						"$ignoreUnknownInstances": false,
-						"$path": {
-							"optional": "src/Types/client"
 						}
 					}
 				}

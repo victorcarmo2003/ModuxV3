@@ -1,5 +1,3 @@
---!strict
-local ThirdPartyUserService = game:GetService("ThirdPartyUserService")
 --[[
 ================================================================
  NÍVEL 3 — TABELAS
@@ -520,9 +518,24 @@ PASSOS
 ]]
 type function NormalizarChaves(k: type)
 	local nomes = {}
-
-	-- TODO: preencha `nomes` com strings
-
+	if k:is("union") then
+		for _, c in k:components() do
+			if not c:is("singleton") then
+				error(`inside union is not a singleton, got {c.tag}`)
+			end
+			local value = c:value()
+			if type(value) ~= "string" then
+				error(`value is not string`)
+			end
+			table.insert(nomes, value)
+		end
+	elseif k:is("singleton") then
+		local value = k:value()
+		if type(value) ~= "string" then
+			error(`value is not string`)
+		end
+		table.insert(nomes, value)
+	end
 	return types.singleton(tostring(#nomes))
 end
 
@@ -613,7 +626,7 @@ end
 type _E3_11a = Escolher<Config, "nome">        --> { nome: string }
 type _E3_11b = Escolher<Config, "nome" | "hp"> --> { nome: string, hp: number }
 -- descomente depois de fazer a extensão
--- type _E3_11c = Escolher<Config, "inexistente">
+type _E3_11c = Escolher<Config, "inexistente">
 
 
 -- ============================================================
@@ -740,12 +753,49 @@ além das propriedades nomeadas.
 (dica: releia a assinatura de `types.newtable` — são três
 parâmetros, e você só estava usando zero)
 ]]
-type function Omitir(t: type, k: type)
-	-- TODO: reaproveite a normalização de chaves do 3.10
-	return t
+type function Occlude(t: type, k: type)
+	if not t:is("table") then
+		error(`it should be table`)
+	end
+	
+	local ocludded = {}
+	local function register(ty:type)
+		local value = ty:value()
+		if type(value) ~= "string" then
+			error(`singleton needs to be string`)
+		end
+		ocludded[value] = true
+	end
+
+	if k:is("union") then
+		for _, ty in k:components() do
+			if ty:is("singleton") then
+				register(ty)
+			end
+		end
+		elseif k:is("singleton") then
+		register(k)
+		else
+			error(`k must be union or singleton`)
+	end
+
+	local result = types.newtable()
+	for index, ty in t:properties() do
+		local name = index:value()
+		if type(name) ~= "string" then
+			error(`Name needs to be string`)
+		end
+		if ocludded[name] then
+			continue
+		end
+		result:setwriteproperty(index, ty.read)
+		result:setreadproperty(index, ty.read)
+	end
+
+	return result
 end
 
-type _E3_14 = Omitir<Config, "mana"> --> { nome: string, hp: number }
+type _E3_14 = Occlude<Config, "mana"> --> { nome: string, hp: number }
 
 -- RESPOSTA (por que copy e não newtable): _____________________
 
