@@ -2,13 +2,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Runtime = require(ReplicatedStorage.shared.Modux.Classes)
 local Registry = require(ReplicatedStorage.shared.Modux.Classes.Registry)
-local Core = require(ReplicatedStorage.shared.Modux)
+local Core = require(ReplicatedStorage.shared.Modux.Core)
 local Types = require(script.Types)
+local Modules = require(script.Modules)
 
-export type Settings = {
-	LogLevel: ("none" | "error" | "warn" | "info")?,
-	TickRate: number?,
-}
+export type Settings = Core.Settings
 
 const Modux = {}
 
@@ -40,7 +38,11 @@ function Modux.Configure(settings: Settings)
 end
 
 function Modux.Start()
-	Core.Start()
+	Core.Start({ Modux._registry.Service, Modux._registry.Component }, Modules, Modux._settings)
+end
+
+function Modux.Stop()
+	Core.Stop()
 end
 
 return Modux
