@@ -4,6 +4,7 @@ local Classes = require(ReplicatedStorage.shared.Modux.Classes)
 const Zombie = Classes.Controller("Zombie")
 
 function Zombie.Heal(self, Amount: number)
+	self.Dependencies.Skeleton:KillPlayer()
 	self.Dependencies.Skeleton:ShotArrow()
 end
 

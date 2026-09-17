@@ -1,5 +1,5 @@
 --!strict
--- GERADO por tools/modux_manifest.py a partir das folhas do projeto.
+-- GERADO por modux a partir das folhas do projeto.
 -- NAO EDITAR A MAO: a proxima geracao sobrescreve.
 --
 -- Cada entrada e o `self` ja enxertado: os membros da folha mais as
