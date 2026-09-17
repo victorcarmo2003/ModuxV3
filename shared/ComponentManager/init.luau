@@ -1,0 +1,3 @@
+const ComponentManager = {}
+
+return ComponentManager
