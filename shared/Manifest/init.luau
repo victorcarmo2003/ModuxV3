@@ -1,9 +1,10 @@
 --!strict
--- GERADO a partir das Type.luau. Nao editar a mao.
+-- GERADO por tools/modux_manifest.py a partir das folhas do projeto.
+-- NAO EDITAR A MAO: a proxima geracao sobrescreve.
 --
--- Cada entrada e o `self` ja enxertado: os metodos da Type.luau mais as
--- `Dependencies` resolvidas. E dela que o corpo do controller puxa o tipo
--- esperado, e por isso `self` fica tipado sem o usuario anotar nada.
+-- Cada entrada e o `self` ja enxertado: os membros da folha mais as
+-- `Dependencies` resolvidas. As dependencias apontam para a folha CRUA,
+-- nunca para a enxertada, senao o enxerto desce infinitamente.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SelfOf = require(ReplicatedStorage.shared.Types.SelfOf)
@@ -13,10 +14,12 @@ local Zombie = require(ReplicatedStorage.shared.Entity.Zombie.Type)
 
 export type AllControllers = {
 	Default: SelfOf.Build<Default.Public, { Zombie: Zombie.Public }>,
-	Zombie: SelfOf.Build<Zombie.Public, { Skeleton: Skeleton.Public }>,
 	Skeleton: SelfOf.Build<Skeleton.Public, {}>,
+	Zombie: SelfOf.Build<Zombie.Public, { Skeleton: Skeleton.Public }>,
 }
+
 export type AllServices = {}
+
 export type AllComponents = {}
 
 return {}
