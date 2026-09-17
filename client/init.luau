@@ -19,12 +19,20 @@ Modux._registry = {
 
 Modux._settings = {} :: Settings
 
-function Modux.Controller<ID, P>(id: ID & Types.ControllerKey, props: P?): Types.ControllerReturn<ID>
-	return Registry.register("Controller", Runtime.Controller, Modux._registry.Controller, (id :: any) :: string, props) :: any
+function Modux.Controller<ID, P>(
+	id: ID & Types.ControllerKey,
+	props: (P | Types.ControllerProps)?
+): Types.ControllerReturn<ID, P>
+	const p = ((props :: any) or {}) :: Types.ControllerProps
+	return Registry.register("Controller", Runtime.Controller, Modux._registry.Controller, (id :: any) :: string, p) :: any
 end
 
-function Modux.Component<ID, P>(id: ID & Types.ComponentKey, props: P?): Types.ComponentReturn<ID>
-	return Registry.register("Component", Runtime.Component, Modux._registry.Component, (id :: any) :: string, props) :: any
+function Modux.Component<ID, P>(
+	id: ID & Types.ComponentKey,
+	props: (P | Types.ComponentProps)?
+): Types.ComponentReturn<ID, P>
+	const p = ((props :: any) or {}) :: Types.ComponentProps
+	return Registry.register("Component", Runtime.Component, Modux._registry.Component, (id :: any) :: string, p) :: any
 end
 
 function Modux.Configure(settings: Settings)

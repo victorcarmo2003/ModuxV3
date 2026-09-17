@@ -19,12 +19,20 @@ Modux._registry = {
 
 Modux._settings = {} :: Settings
 
-function Modux.Service<ID, P>(id: ID & Types.ServiceKey, props: P?): Types.ServiceReturn<ID>
-	return Registry.register("Service", Runtime.Service, Modux._registry.Service, (id :: any) :: string, props) :: any
+function Modux.Service<ID, P>(
+	id: ID & Types.ServiceKey,
+	props: (P | Types.ServiceProps)?
+): Types.ServiceReturn<ID, P>
+	const p = ((props :: any) or {}) :: Types.ServiceProps
+	return Registry.register("Service", Runtime.Service, Modux._registry.Service, (id :: any) :: string, p) :: any
 end
 
-function Modux.Component<ID, P>(id: ID & Types.ComponentKey, props: P?): Types.ComponentReturn<ID>
-	return Registry.register("Component", Runtime.Component, Modux._registry.Component, (id :: any) :: string, props) :: any
+function Modux.Component<ID, P>(
+	id: ID & Types.ComponentKey,
+	props: (P | Types.ComponentProps)?
+): Types.ComponentReturn<ID, P>
+	const p = ((props :: any) or {}) :: Types.ComponentProps
+	return Registry.register("Component", Runtime.Component, Modux._registry.Component, (id :: any) :: string, p) :: any
 end
 
 function Modux.Configure(settings: Settings)
