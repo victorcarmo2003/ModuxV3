@@ -1,0 +1,4 @@
+-- type T = { A: number, B: string }
+-- type K = keyof<T>                -- 1
+-- type P = { read foo: number }    -- 2
+-- type I = { read [number]: K }    -- 3

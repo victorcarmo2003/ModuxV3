@@ -75,9 +75,16 @@ $args = @("analyze", "--sourcemap=$mapa", "--flag:LuauSolverV2=true")
 if ($Defs) { $args += "--definitions=$Defs" }
 $args += $arquivos.FullName
 
-$saida = & $motor @args 2>&1 | Where-Object { $_ -notmatch '^\[INFO\]' }
+# O luau-lsp escreve [INFO] no stderr. Com ErrorActionPreference = Stop, o
+# PowerShell transforma isso em erro e a analise morre antes de reportar.
+$anterior = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+$saida = & $motor @args 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -notmatch '\[INFO\]' }
+$ErrorActionPreference = $anterior
 
-$erros = @($saida | Select-String 'TypeError|SyntaxError')
+# O mesmo arquivo e reanalisado uma vez por require que chega nele, entao
+# um erro unico aparece repetido. Sem dedup a contagem mente.
+$erros = @($saida | Select-String 'TypeError|SyntaxError' | ForEach-Object { $_.Line } | Select-Object -Unique)
 $ciclos = @($saida | Select-String 'Cyclic module dependency')
 
 if ($Detail -and $erros.Count -gt 0) {
