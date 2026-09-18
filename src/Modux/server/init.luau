@@ -12,7 +12,10 @@ const Modux = {}
 
 Modux._registry = {
 	Service = {} :: Registry.Store,
-	Component = {} :: Registry.Store,
+}
+
+Modux._templates = {
+	Component = {} :: Registry.Templates,
 }
 
 Modux._settings = {} :: Settings
@@ -30,7 +33,13 @@ function Modux.Component<ID, P>(
 	props: (P | Types.ComponentProps)?
 ): Types.ComponentReturn<ID, P>
 	const p = ((props :: any) or {}) :: Types.ComponentProps
-	return Registry.register("Component", Runtime.Component, Modux._registry.Component, (id :: any) :: string, p) :: any
+	return Registry.template(
+			"Component",
+			Runtime.Component,
+			Modux._templates.Component,
+			(id :: any) :: string,
+			p
+		) :: any
 end
 
 function Modux.Configure(settings: Settings)
@@ -38,7 +47,7 @@ function Modux.Configure(settings: Settings)
 end
 
 function Modux.Start()
-	Core.Start({ Modux._registry.Service, Modux._registry.Component }, Modules, Modux._settings)
+	Core.Start({ Modux._registry.Service }, Modux._templates.Component, Modules, Modux._settings)
 end
 
 function Modux.Stop()
