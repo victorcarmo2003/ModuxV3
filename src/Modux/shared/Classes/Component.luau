@@ -5,6 +5,7 @@ Component.__index = Component
 export type Registry = {
 	OnInit: { (any) -> () },
 	OnStart: { (any) -> () },
+	OnDestroy: { (any) -> () },
 	OnTick: { { callback: (any) -> (), frequency: number } },
 }
 
@@ -39,11 +40,23 @@ function Component:OnStart(callback)
 	table.insert(onStartList, callback)
 end
 
+-- Only Component has this. A Controller or a Service is a singleton and lives
+-- as long as the session; a component object goes away whenever its tag is
+-- removed or its Instance is destroyed.
+function Component:OnDestroy(callback)
+	const onDestroyList = self._registry.OnDestroy
+	if type(callback) ~= "function" then
+		error(`[OnDestroy] Must be callback function, got {type(callback)}`)
+	end
+	table.insert(onDestroyList, callback)
+end
+
 function Component.New()
 	return setmetatable({
 		_registry = {
 			OnInit = {},
 			OnStart = {},
+			OnDestroy = {},
 			OnTick = {},
 		} :: Registry,
 	}, { __index = Component })
