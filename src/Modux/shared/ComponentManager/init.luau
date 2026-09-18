@@ -15,7 +15,7 @@ type Live = {
 const ComponentManager = {}
 
 local templates: Registry.Templates = {}
-local options: Options = { Profile = false }
+local options: Options = { Profiling = false, Debug = "None" }
 local connections: { RBXScriptConnection } = {}
 local prepared = false
 
@@ -46,14 +46,14 @@ local function construct(template: Registry.Template, instance: Instance): any
 	}, { __index = template.Class })
 
 	const registry = template.Class._registry
+	const label = `{template.ID}@{instance.Name}`
 	bucket[instance] = {
 		object = object,
-		ticks = Loader.addTicks(object, registry.OnTick),
+		ticks = Loader.addTicks(object, registry.OnTick, label),
 	}
 
-	const label = `{template.ID}@{instance.Name}`
-	Loader.invoke(object, registry.OnInit, "OnInit", label, options.Profile)
-	Loader.invoke(object, registry.OnStart, "OnStart", label, options.Profile)
+	Loader.invoke(object, registry.OnInit, "OnInit", label, options)
+	Loader.invoke(object, registry.OnStart, "OnStart", label, options)
 
 	return object
 end
@@ -72,7 +72,7 @@ local function teardown(template: Registry.Template, instance: Instance)
 		template.Class._registry.OnDestroy,
 		"OnDestroy",
 		`{template.ID}@{instance.Name}`,
-		options.Profile
+		options
 	)
 end
 

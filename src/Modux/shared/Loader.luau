@@ -6,17 +6,34 @@ local Utils = require(ReplicatedStorage.shared.Utils)
 
 export type Store = Registry.Store
 
--- Core always fills this in, so nothing here is optional. Leaving `Profile`
--- optional made `{ Profile: boolean }` fail to pass as `{ Profile: boolean? }`,
--- which is table invariance, not a mistake at the call site.
+export type DebugLevel = "Low" | "Medium" | "High"
+
+-- Core always fills these in, so nothing here is optional. Leaving a field
+-- optional made `{ Profiling: boolean }` fail to pass as
+-- `{ Profiling: boolean? }`, which is table invariance, not a mistake at the
+-- call site. Debug is a value, not an absent field: "None" means quiet.
 export type Options = {
-	Profile: boolean,
+	Profiling: boolean,
+	Debug: DebugLevel | "None",
+}
+
+-- O aviso de lentidao existe em todo nivel; o que muda e o que conta como
+-- lento. Em Low so o que derruba varios frames aparece; em High qualquer
+-- coisa acima de um milissegundo, que e o nivel de quem esta cacando.
+local LIMITE: { [string]: number } = {
+	None = math.huge,
+	Low = 100,
+	Medium = 1000 / 60,
+	High = 1,
 }
 
 export type Tick = {
 	instance: any,
+	label: string,
 	callback: (any, number) -> (),
 	period: number,
+	priority: number,
+	seq: number,
 	elapsed: number,
 	dead: boolean,
 }
@@ -30,6 +47,13 @@ export type TickHandle = { Tick }
 local Loader = {}
 
 local started = false
+local inicioDoBoot = 0
+local proximaSeq = 0
+-- O clock e uma conexao unica criada uma vez; ele nao recebe options por
+-- parametro, entao elas ficam aqui.
+local opcoes: Options = { Profiling = false, Debug = "None" }
+local modulosCarregados = 0
+local porModulo: { { nome: string, ms: number } } = {}
 local ticking: { Tick } = {}
 local buryCount = 0
 local heartbeat: RBXScriptConnection? = nil
@@ -104,26 +128,46 @@ function Loader.invoke(
 	callbacks: { (any) -> () },
 	phase: string,
 	label: string,
-	profile: boolean
+	options: Options
 )
+	const limite = LIMITE[options.Debug] or math.huge
 	for _, callback in callbacks do
-		if profile then
+		-- Categoria de memoria e o par do profilebegin: um aparece no
+		-- MicroProfiler, o outro na aba de memoria do Developer Console e no
+		-- Stats:GetMemoryUsageMbForTag. Sem isso tudo que o framework aloca
+		-- cai num balde so e nao da para saber de qual modulo veio.
+		--
+		-- Guarda e restaura em vez de resetmemorycategory: invoke aninha - um
+		-- OnStart de Controller pode criar componente, que invoca de novo - e
+		-- o reset voltaria para o padrao do script, perdendo a categoria de
+		-- fora.
+		local categoriaAnterior: string? = nil
+		if options.Profiling then
 			debug.profilebegin(`Modux.{phase}.{label}`)
+			categoriaAnterior = debug.getmemorycategory()
+			debug.setmemorycategory(`Modux.{label}`)
 		end
+		const inicio = os.clock()
 		const ok, err = pcall(callback, object)
-		if profile then
+		const ms = (os.clock() - inicio) * 1000
+		if options.Profiling then
+			if categoriaAnterior ~= nil then
+				debug.setmemorycategory(categoriaAnterior)
+			end
 			debug.profileend()
 		end
 		if not ok then
 			warn(`[Modux] {phase} of "{label}" errored: {err}`)
+		elseif ms > limite then
+			warn(`[Modux] {phase} of "{label}" took {string.format("%.1f", ms)} ms`)
 		end
 	end
 end
 
-local function fire(entries: { Registry.Entry }, phase: "OnInit" | "OnStart", profile: boolean)
+local function fire(entries: { Registry.Entry }, phase: "OnInit" | "OnStart", options: Options)
 	for _, entry in entries do
 		const instance = entry.Class :: any
-		Loader.invoke(instance, instance._registry[phase], phase, entry.ID, profile)
+		Loader.invoke(instance, instance._registry[phase], phase, entry.ID, options)
 	end
 end
 
@@ -163,7 +207,20 @@ local function ensureClock()
 					-- dropped; the fractional phase is kept so a normal frame
 					-- still does not drift.
 					tick.elapsed %= tick.period
+
+					local categoriaAnterior: string? = nil
+					if opcoes.Profiling then
+						debug.profilebegin(`Modux.OnTick.{tick.label}`)
+						categoriaAnterior = debug.getmemorycategory()
+						debug.setmemorycategory(`Modux.{tick.label}`)
+					end
 					local ok, err = pcall(tick.callback, tick.instance, delta)
+					if opcoes.Profiling then
+						if categoriaAnterior ~= nil then
+							debug.setmemorycategory(categoriaAnterior)
+						end
+						debug.profileend()
+					end
 					if not ok then
 						warn(`[Modux] OnTick errored: {err}`)
 					end
@@ -176,20 +233,42 @@ end
 -- A callback removed mid-frame is only marked, never spliced: the heartbeat may
 -- be walking this very list, and one of the callbacks it is walking is what
 -- destroys a component. Compaction happens at the top of the next frame.
-function Loader.addTicks(instance: any, ticks: { { callback: (any, number) -> (), frequency: number } }): TickHandle
+function Loader.addTicks(
+	instance: any,
+	ticks: { { callback: (any, number) -> (), tickRate: number, priority: number } },
+	label: string
+): TickHandle
 	const handle: TickHandle = {}
 	for _, tick in ticks do
 		const row: Tick = {
 			instance = instance,
+			label = label,
 			callback = tick.callback,
-			period = 1 / math.max(tick.frequency, 0.001),
+			period = 1 / math.max(tick.tickRate, 0.001),
+			priority = tick.priority,
+			seq = proximaSeq,
 			elapsed = 0,
 			dead = false,
 		}
+		proximaSeq += 1
 		table.insert(ticking, row)
 		table.insert(handle, row)
 	end
 	if #ticks > 0 then
+		-- Ordenar aqui e nao a cada frame: registrar tick e raro, percorrer a
+		-- lista acontece sessenta vezes por segundo.
+		--
+		-- O desempate por seq nao e detalhe. table.sort nao e estavel, e sem
+		-- priority declarado todo mundo fica em 1, entao sem o desempate a
+		-- ordem entre iguais seria arbitraria E mudaria a cada registro novo:
+		-- criar um componente embaralharia a ordem dos ticks que ja existiam,
+		-- em runtime. Com seq, quem registrou antes roda antes, sempre.
+		table.sort(ticking, function(a: Tick, b: Tick)
+			if a.priority ~= b.priority then
+				return a.priority > b.priority
+			end
+			return a.seq < b.seq
+		end)
 		ensureClock()
 	end
 	return handle
@@ -207,15 +286,29 @@ end
 local function collectTicks(entries: { Registry.Entry })
 	for _, entry in entries do
 		const instance = entry.Class :: any
-		Loader.addTicks(instance, instance._registry.OnTick)
+		Loader.addTicks(instance, instance._registry.OnTick, entry.ID)
 	end
 end
 
 local loadOne = require :: (ModuleScript) -> any
 
-local function loadModules(moduleScripts: { ModuleScript })
+-- O require domina o boot: nas medicoes ele foi ~88% do total, e o resto do
+-- Loader somado deu fracao de milissegundo. Por isso o nivel High mede por
+-- modulo - e o unico lugar onde vale procurar.
+local function loadModules(moduleScripts: { ModuleScript }, options: Options)
+	const detalhado = options.Debug == "High"
 	for _, moduleScript in moduleScripts do
-		loadOne(moduleScript)
+		if detalhado then
+			const inicio = os.clock()
+			loadOne(moduleScript)
+			table.insert(porModulo, {
+				nome = moduleScript.Name,
+				ms = (os.clock() - inicio) * 1000,
+			})
+		else
+			loadOne(moduleScript)
+		end
+		modulosCarregados += 1
 	end
 end
 
@@ -223,14 +316,20 @@ end
 -- its dependencies, but nothing has booted yet, which is the only window where
 -- the ComponentManager can be handed the same map and still be usable from
 -- inside a Controller's OnStart.
-function Loader.prepare(stores: { Store }, moduleScripts: { ModuleScript }?): { [string]: Registry.Entry }
+function Loader.prepare(
+	stores: { Store },
+	moduleScripts: { ModuleScript }?,
+	options: Options
+): { [string]: Registry.Entry }
 	if started then
 		error("[Modux] Start was already called")
 	end
 	started = true
+	inicioDoBoot = os.clock()
+	opcoes = options
 
 	if moduleScripts then
-		loadModules(moduleScripts)
+		loadModules(moduleScripts, options)
 	end
 
 	const byId = indexById(stores)
@@ -238,18 +337,29 @@ function Loader.prepare(stores: { Store }, moduleScripts: { ModuleScript }?): { 
 	return byId
 end
 
-function Loader.run(stores: { Store }, options: Options?)
+function Loader.run(stores: { Store }, options: Options)
 	if not started then
 		error("[Modux] Loader.prepare must run before Loader.run")
 	end
 
 	const entries = ordered(stores)
-	const profile = (options and options.Profile) == true
-
-	fire(entries, "OnInit", profile)
-	fire(entries, "OnStart", profile)
-
+	fire(entries, "OnInit", options)
+	fire(entries, "OnStart", options)
 	collectTicks(entries)
+
+	if options.Debug ~= "None" then
+		const total = (os.clock() - inicioDoBoot) * 1000
+		local linha = `[Modux] boot em {string.format("%.1f", total)} ms`
+		if options.Debug ~= "Low" then
+			linha ..= ` | {#entries} singletons | {modulosCarregados} modulos requeridos`
+		end
+		print(linha)
+		if options.Debug == "High" then
+			for _, m in porModulo do
+				print(`[Modux]   require {m.nome}: {string.format("%.2f", m.ms)} ms`)
+			end
+		end
+	end
 end
 
 function Loader.stop()
@@ -258,7 +368,10 @@ function Loader.stop()
 		heartbeat = nil
 	end
 	table.clear(ticking)
+	table.clear(porModulo)
+	proximaSeq = 0
 	buryCount = 0
+	modulosCarregados = 0
 	started = false
 end
 

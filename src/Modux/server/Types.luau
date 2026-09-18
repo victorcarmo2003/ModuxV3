@@ -39,13 +39,13 @@ export type ComponentSelf<ID, P> = SelfOf.Build<
 >
 
 export type ServiceBase<ID, P> = {
-	OnTick: (self: any, callback: (self: ServiceSelf<ID, P>) -> (), frequency: number?) -> (),
+	OnTick: (self: any, callback: (self: ServiceSelf<ID, P>) -> (), tickRate: number?, priority: number?) -> (),
 	OnInit: (self: any, callback: (self: ServiceSelf<ID, P>) -> ()) -> (),
 	OnStart: (self: any, callback: (self: ServiceSelf<ID, P>) -> ()) -> (),
 }
 
 export type ComponentBase<ID, P> = {
-	OnTick: (self: any, callback: (self: ComponentSelf<ID, P>) -> (), frequency: number?) -> (),
+	OnTick: (self: any, callback: (self: ComponentSelf<ID, P>) -> (), tickRate: number?, priority: number?) -> (),
 	OnInit: (self: any, callback: (self: ComponentSelf<ID, P>) -> ()) -> (),
 	OnStart: (self: any, callback: (self: ComponentSelf<ID, P>) -> ()) -> (),
 	OnDestroy: (self: any, callback: (self: ComponentSelf<ID, P>) -> ()) -> (),
