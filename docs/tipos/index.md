@@ -74,6 +74,7 @@ Duas pastas, com propósitos diferentes.
 | [`Struct`](/tipos/struct) | `Partial`, `Required`, `Readonly`, `Mutable`, `Assign`, `Merge`, `Record`, `Rename`, `DeepPartial`, `DeepReadonly` |
 | [`Union`](/tipos/union) | `Exclude`, `Extract`, `NonNullable`, `KeyList`, `ValueList`, `Entries` |
 | [`Occlude`](/tipos/occlude) | `Keys` — remove campos por nome |
+| [`Atomic`](/tipos/atomic) | `Of`, `Table` — cada campo vira um par getter/setter |
 
 Nada em `src/Shared/Types/` é requerido pelo framework. Apagar não quebra nada
 além de quem usava.

@@ -163,7 +163,7 @@ quase sempre a resposta — e a causa costuma ser a falha nº 2.
 
 ## Um exemplo completo
 
-Derivar `{ Coins: number }` em campos reativos, onde cada um lê chamado sem
+Este está pronto no repositório, como [`Atomic`](/tipos/atomic). Derivar `{ Coins: number }` em campos reativos, onde cada um lê chamado sem
 argumento e escreve chamado com um:
 
 ```lua

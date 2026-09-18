@@ -38,6 +38,7 @@ export default defineConfig({
 					{ text: "Struct", link: "/tipos/struct" },
 					{ text: "Union", link: "/tipos/union" },
 					{ text: "Occlude", link: "/tipos/occlude" },
+					{ text: "Atomic", link: "/tipos/atomic" },
 					{ text: "Escrevendo a sua", link: "/tipos/escrevendo" },
 				],
 			},

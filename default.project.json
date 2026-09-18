@@ -1,4 +1,7 @@
 {
+	"globIgnorePaths": [
+		"**/*.md"
+	],
 	"name": "ModuxV3",
 	"tree": {
 		"$className": "DataModel",
