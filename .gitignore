@@ -3,3 +3,6 @@
 /*.rbxl.lock
 sourcemap.json
 __pycache__/
+docs/node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
