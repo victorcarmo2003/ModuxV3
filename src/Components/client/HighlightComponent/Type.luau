@@ -3,6 +3,7 @@
 -- DO NOT EDIT: the next generation overwrites this file.
 
 export type Public = {
+	Instance: Instance,
 	Ligado: boolean,
 	Acender: (self: Public) -> (),
 }

@@ -18,4 +18,12 @@ export type AllComponents = {
 	HighlightComponent: HighlightComponent.Public,
 }
 
+export type ComponentAccess = {
+	HighlightComponent: {
+		Get: (self: any, instance: Instance) -> HighlightComponent.Public?,
+		Create: (self: any, instance: Instance) -> HighlightComponent.Public,
+		All: (self: any) -> { HighlightComponent.Public },
+	},
+}
+
 return {}
