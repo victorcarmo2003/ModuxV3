@@ -1139,9 +1139,6 @@ function Promise:andThen<U>(onFulfilled, onRejected): Promise<U>
 	end
 	local handlerTrace = debug.traceback(nil, 2)
 
-	-- Register as a live consumer so refcount-driven cancellation works.
-	-- Only track consumers while the parent is still pending; once settled,
-	-- the count is no longer meaningful.
 	local registered = false
 	if parent._status == "Pending" then
 		parent._consumers += 1
@@ -1392,32 +1389,23 @@ Promise.Error = table.freeze({
 	Kind = ErrorKindEnum,
 })
 
--- Public module-level types. Kept at the end of the file so we can refer to
--- locals (`StatusEnum`, `ErrorKindEnum`) via `typeof`, and to keep the runtime
--- surface and its type in sync without duplicating the enum literals.
 export type ErrorAPI = {
 	new: (options: ErrorOptions?) -> Error,
 	is: (value: any) -> boolean,
 	Kind: typeof(ErrorKindEnum),
 }
 
--- Each field below mirrors its runtime counterpart byte-for-byte (generics
--- included). Keep them in lockstep when evolving the public API: the cast at
--- `return` is unchecked, so any mismatch here silently misleads consumers.
 export type PromiseAPI = {
-	-- Constructors
 	new: <T>(executor: Executor<T>) -> Promise<T>,
 	defer: <T>(executor: Executor<T>) -> Promise<T>,
 	resolve: <T>(value: T | Promise<T>) -> Promise<T>,
 	reject: <T>(reason: any) -> Promise<T>,
 	try: <T>(fn: (...any) -> any, ...any) -> Promise<T>,
 
-	-- Adapters
 	promisify: <T>(callback: (...any) -> T) -> (...any) -> Promise<T>,
 	fromEvent: <T>(event: any, predicate: ((...any) -> boolean)?) -> Promise<T>,
 	delay: (seconds: number) -> Promise<number>,
 
-	-- Combinators
 	all: <T>(promises: { Promise<T> }) -> Promise<{ T }>,
 	some: <T>(promises: { Promise<T> }, count: number) -> Promise<{ T }>,
 	race: <T>(promises: { Promise<T> }) -> Promise<T>,
@@ -1432,7 +1420,6 @@ export type PromiseAPI = {
 		initialValue: U
 	) -> Promise<U>,
 
-	-- Retry helpers
 	retry: <T>(callback: (...any) -> Promise<T>, times: number, ...any) -> Promise<T>,
 	retryWithDelay: <T>(
 		callback: (...any) -> Promise<T>,
@@ -1441,11 +1428,9 @@ export type PromiseAPI = {
 		...any
 	) -> Promise<T>,
 
-	-- Introspection / hooks
 	is: (value: any) -> boolean,
 	onUnhandledRejection: (callback: (promise: PromiseLike, reason: any) -> ()) -> () -> (),
 
-	-- Constants
 	Status: typeof(StatusEnum),
 	Error: ErrorAPI,
 }

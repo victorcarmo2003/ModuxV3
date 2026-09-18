@@ -24,8 +24,6 @@ export type FSM<State> = {
 	_destroyed: boolean,
 }
 
---- Superficie do modulo, para o `self.Utils` carregar uma referencia so em vez
---- de reexportar cada tipo.
 export type Api = {
 	new: <State>(initialState: State, transitions: Transitions<State>?) -> FSM<State>,
 }

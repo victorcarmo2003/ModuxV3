@@ -1,107 +1,100 @@
 --!strict
--- Operacoes sobre uniao, e as pontes de tabela para uniao.
---
--- Mesmas duas regras do Struct: `types` so existe dentro do corpo da type
--- function, e cada exportada precisa da ancora no fim do arquivo.
 
-type Exemplo = { nome: string, hp: number, arma: string? }
-type Cor = "vermelho" | "verde" | "azul"
+type Example = { name: string, hp: number, weapon: string? }
+type Color = "red" | "green" | "blue"
 
--- Tira de U tudo que aparece em E.
 export type function Exclude(u: type, e: type): type
 	if u:is("any") or u:is("unknown") or u:is("never") then
 		return types.any
 	end
 
-	local fora = {}
-	local function marca(t: type)
+	local outSet = {}
+	local function mark(t: type)
 		if t:is("singleton") then
-			fora[tostring(t:value())] = true
+			outSet[tostring(t:value())] = true
 		else
-			fora[t.tag] = true
+			outSet[t.tag] = true
 		end
 	end
 	if e:is("union") then
-		for _, parte in e:components() do
-			marca(parte)
+		for _, part in e:components() do
+			mark(part)
 		end
 	else
-		marca(e)
+		mark(e)
 	end
 
-	local function cortado(t: type): boolean
+	local function cut(t: type): boolean
 		if t:is("singleton") then
-			return fora[tostring(t:value())] == true
+			return outSet[tostring(t:value())] == true
 		end
-		return fora[t.tag] == true
+		return outSet[t.tag] == true
 	end
 
 	if not u:is("union") then
-		return if cortado(u) then types.never else u
+		return if cut(u) then types.never else u
 	end
-	local restantes = {}
-	for _, parte in u:components() do
-		if not cortado(parte) then
-			table.insert(restantes, parte)
+	local remaining = {}
+	for _, part in u:components() do
+		if not cut(part) then
+			table.insert(remaining, part)
 		end
 	end
-	if #restantes == 0 then
+	if #remaining == 0 then
 		return types.never
 	end
-	if #restantes == 1 then
-		return restantes[1]
+	if #remaining == 1 then
+		return remaining[1]
 	end
-	return types.unionof(table.unpack(restantes))
+	return types.unionof(table.unpack(remaining))
 end
 
--- O oposto: fica so o que aparece nos dois.
 export type function Extract(u: type, e: type): type
 	if u:is("any") or u:is("unknown") or u:is("never") then
 		return types.any
 	end
 
-	local dentro = {}
-	local function marca(t: type)
+	local inSet = {}
+	local function mark(t: type)
 		if t:is("singleton") then
-			dentro[tostring(t:value())] = true
+			inSet[tostring(t:value())] = true
 		else
-			dentro[t.tag] = true
+			inSet[t.tag] = true
 		end
 	end
 	if e:is("union") then
-		for _, parte in e:components() do
-			marca(parte)
+		for _, part in e:components() do
+			mark(part)
 		end
 	else
-		marca(e)
+		mark(e)
 	end
 
-	local function mantem(t: type): boolean
+	local function keep(t: type): boolean
 		if t:is("singleton") then
-			return dentro[tostring(t:value())] == true
+			return inSet[tostring(t:value())] == true
 		end
-		return dentro[t.tag] == true
+		return inSet[t.tag] == true
 	end
 
 	if not u:is("union") then
-		return if mantem(u) then u else types.never
+		return if keep(u) then u else types.never
 	end
-	local restantes = {}
-	for _, parte in u:components() do
-		if mantem(parte) then
-			table.insert(restantes, parte)
+	local remaining = {}
+	for _, part in u:components() do
+		if keep(part) then
+			table.insert(remaining, part)
 		end
 	end
-	if #restantes == 0 then
+	if #remaining == 0 then
 		return types.never
 	end
-	if #restantes == 1 then
-		return restantes[1]
+	if #remaining == 1 then
+		return remaining[1]
 	end
-	return types.unionof(table.unpack(restantes))
+	return types.unionof(table.unpack(remaining))
 end
 
--- Tira o nil.
 export type function NonNullable(t: type): type
 	if t:is("any") or t:is("unknown") or t:is("never") then
 		return types.any
@@ -109,117 +102,108 @@ export type function NonNullable(t: type): type
 	if not t:is("union") then
 		return t
 	end
-	local restantes = {}
-	for _, parte in t:components() do
-		if parte.tag ~= "nil" then
-			table.insert(restantes, parte)
+	local remaining = {}
+	for _, part in t:components() do
+		if part.tag ~= "nil" then
+			table.insert(remaining, part)
 		end
 	end
-	if #restantes == 0 then
+	if #remaining == 0 then
 		return types.never
 	end
-	if #restantes == 1 then
-		return restantes[1]
+	if #remaining == 1 then
+		return remaining[1]
 	end
-	return types.unionof(table.unpack(restantes))
+	return types.unionof(table.unpack(remaining))
 end
 
--- As chaves como array: { "arma" | "hp" | "nome" }. Diferente do `keyof`
--- nativo, que devolve a uniao solta; aqui ja vem no formato que uma funcao
--- `keys()` retorna.
 export type function KeyList(t: type): type
 	if t:is("any") or t:is("unknown") or t:is("never") then
 		return types.any
 	end
 	if not t:is("table") then
-		error(`[KeyList] esperava table, recebi {t.tag}`)
+		error(`[KeyList] expected a table, got {t.tag}`)
 	end
-	local chaves = {}
-	for chave in t:properties() do
-		table.insert(chaves, chave)
+	local keys = {}
+	for key in t:properties() do
+		table.insert(keys, key)
 	end
-	local saida = types.newtable()
-	if #chaves == 0 then
-		saida:setindexer(types.number, types.never)
-	elseif #chaves == 1 then
-		saida:setindexer(types.number, chaves[1])
+	local out = types.newtable()
+	if #keys == 0 then
+		out:setindexer(types.number, types.never)
+	elseif #keys == 1 then
+		out:setindexer(types.number, keys[1])
 	else
-		saida:setindexer(types.number, types.unionof(table.unpack(chaves)))
+		out:setindexer(types.number, types.unionof(table.unpack(keys)))
 	end
-	return saida
+	return out
 end
 
--- Os valores como array: { string | number | nil }.
 export type function ValueList(t: type): type
 	if t:is("any") or t:is("unknown") or t:is("never") then
 		return types.any
 	end
 	if not t:is("table") then
-		error(`[ValueList] esperava table, recebi {t.tag}`)
+		error(`[ValueList] expected a table, got {t.tag}`)
 	end
-	-- Deduplica por assinatura, senao dois campos string viram
-	-- `string | string` no resultado - correto, mas ilegivel no hover.
-	local valores = {}
-	local vistos = {}
+	local values = {}
+	local seen = {}
 	for _, prop in t:properties() do
-		local valor = prop.read or prop.write
-		if valor ~= nil then
-			local assinatura = if valor:is("singleton")
-				then `singleton:{tostring(valor:value())}`
-				else valor.tag
-			if not vistos[assinatura] then
-				vistos[assinatura] = true
-				table.insert(valores, valor)
+		local value = prop.read or prop.write
+		if value ~= nil then
+			local signature = if value:is("singleton")
+				then `singleton:{tostring(value:value())}`
+				else value.tag
+			if not seen[signature] then
+				seen[signature] = true
+				table.insert(values, value)
 			end
 		end
 	end
-	local saida = types.newtable()
-	if #valores == 0 then
-		saida:setindexer(types.number, types.never)
-	elseif #valores == 1 then
-		saida:setindexer(types.number, valores[1])
+	local out = types.newtable()
+	if #values == 0 then
+		out:setindexer(types.number, types.never)
+	elseif #values == 1 then
+		out:setindexer(types.number, values[1])
 	else
-		saida:setindexer(types.number, types.unionof(table.unpack(valores)))
+		out:setindexer(types.number, types.unionof(table.unpack(values)))
 	end
-	return saida
+	return out
 end
 
--- Cada par vira { key, value } com o tipo certo dos dois lados, e o array e a
--- uniao desses pares. E o que permite iterar entries() sem perder o vinculo
--- entre a chave e o tipo do valor dela.
 export type function Entries(t: type): type
 	if t:is("any") or t:is("unknown") or t:is("never") then
 		return types.any
 	end
 	if not t:is("table") then
-		error(`[Entries] esperava table, recebi {t.tag}`)
+		error(`[Entries] expected a table, got {t.tag}`)
 	end
-	local pares = {}
-	for chave, prop in t:properties() do
-		local valor = prop.read or prop.write
-		if valor ~= nil then
+	local pairsOut = {}
+	for key, prop in t:properties() do
+		local value = prop.read or prop.write
+		if value ~= nil then
 			local par = types.newtable()
-			par:setreadproperty(types.singleton("key"), chave)
-			par:setreadproperty(types.singleton("value"), valor)
-			table.insert(pares, par)
+			par:setreadproperty(types.singleton("key"), key)
+			par:setreadproperty(types.singleton("value"), value)
+			table.insert(pairsOut, par)
 		end
 	end
-	local saida = types.newtable()
-	if #pares == 0 then
-		saida:setindexer(types.number, types.never)
-	elseif #pares == 1 then
-		saida:setindexer(types.number, pares[1])
+	local out = types.newtable()
+	if #pairsOut == 0 then
+		out:setindexer(types.number, types.never)
+	elseif #pairsOut == 1 then
+		out:setindexer(types.number, pairsOut[1])
 	else
-		saida:setindexer(types.number, types.unionof(table.unpack(pares)))
+		out:setindexer(types.number, types.unionof(table.unpack(pairsOut)))
 	end
-	return saida
+	return out
 end
 
-type _ancoraExclude = Exclude<Cor, "verde">
-type _ancoraExtract = Extract<Cor, "verde" | "azul">
-type _ancoraNonNullable = NonNullable<string?>
-type _ancoraKeyList = KeyList<Exemplo>
-type _ancoraValueList = ValueList<Exemplo>
-type _ancoraEntries = Entries<Exemplo>
+type _anchorExclude = Exclude<Color, "green">
+type _anchorExtract = Extract<Color, "green" | "blue">
+type _anchorNonNullable = NonNullable<string?>
+type _anchorKeyList = KeyList<Example>
+type _anchorValueList = ValueList<Example>
+type _anchorEntries = Entries<Example>
 
 return {}

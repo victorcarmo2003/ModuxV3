@@ -24,6 +24,11 @@
 					"$path": {
 						"optional": "src/Shared/Types"
 					}
+				},
+				"tablejs": {
+					"$path": {
+						"optional": "src/Shared/tablejs"
+					}
 				}
 			}
 		},
@@ -32,21 +37,9 @@
 			"server": {
 				"$className": "Folder",
 				"$ignoreUnknownInstances": false,
-				"Components": {
-					"$ignoreUnknownInstances": false,
-					"$path": {
-						"optional": "src/Components/server"
-					}
-				},
 				"Modux": {
 					"$path": {
 						"optional": "src/Modux/server"
-					}
-				},
-				"Services": {
-					"$ignoreUnknownInstances": false,
-					"$path": {
-						"optional": "src/Services/server"
 					}
 				}
 			}
@@ -61,24 +54,6 @@
 				"client": {
 					"$className": "Folder",
 					"$ignoreUnknownInstances": false,
-					"Classes": {
-						"$ignoreUnknownInstances": false,
-						"$path": {
-							"optional": "src/Classes/client"
-						}
-					},
-					"Components": {
-						"$ignoreUnknownInstances": false,
-						"$path": {
-							"optional": "src/Components/client"
-						}
-					},
-					"Entity": {
-						"$ignoreUnknownInstances": false,
-						"$path": {
-							"optional": "src/Entity/client"
-						}
-					},
 					"Modux": {
 						"$path": {
 							"optional": "src/Modux/client"

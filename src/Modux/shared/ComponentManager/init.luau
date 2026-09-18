@@ -19,10 +19,6 @@ local options: Options = { Profiling = false, Debug = "None" }
 local connections: { RBXScriptConnection } = {}
 local prepared = false
 
--- Weak keys on purpose. The strong reference to a component object is the
--- Instance being in the DataModel; once it is destroyed and nothing else holds
--- it, the entry should go with it. That way a removal signal that never
--- arrives costs nothing permanent.
 local live: { [string]: { [Instance]: Live } } = {}
 
 local function slot(id: string): { [Instance]: Live }
@@ -90,10 +86,6 @@ local function ordered(): { Registry.Template }
 	return all
 end
 
--- The runtime half of Manifest.ComponentAccess: one entry per declared
--- component, so `self.Components.Whatever:Get(instance)` needs no id string
--- and no generic. Built once and shared; the accessor holds the id in a
--- closure, so the `self` these take is the accessor table and goes unused.
 local function accessTable(): { [string]: any }
 	const access = {}
 	for id in templates do
@@ -115,8 +107,6 @@ local function accessTable(): { [string]: any }
 	return access
 end
 
--- Dependencies land here, before anything boots, so that an explicit Create
--- from inside a Controller's OnStart finds a usable manager.
 function ComponentManager.prepare(
 	declared: Registry.Templates,
 	byId: { [string]: Registry.Entry },
@@ -137,40 +127,24 @@ function ComponentManager.prepare(
 		class.Libs = Libs
 		class.Components = access
 
-		-- Uma closure por template, nao por objeto: ela fecha sobre o template
-		-- e le a Instance do self, entao todos os objetos daquela classe a
-		-- alcancam pela metatable sem custo por instancia.
-		--
-		-- Mora aqui, e nao em Classes/Component, porque a base teria que
-		-- requerer o ComponentManager so para isso.
 		const id = template.ID
 		class.Destroy = function(object: any)
 			ComponentManager.destroy(id, object.Instance)
 		end
 	end
 
-	-- Singletons were injected by Loader.prepare, which ran before this and
-	-- could not know about components.
 	for _, entry in byId do
 		const class = entry.Class :: any
 		class.Components = access
 	end
 end
 
--- Tag binding waits until every Controller and Service has started, so a
--- component nobody asked for by name cannot come up before what it depends on.
 function ComponentManager.start()
 	if not prepared then
 		error("[Modux] ComponentManager.prepare must run before ComponentManager.start")
 	end
 
 	for _, template in ordered() do
-		-- Os dois sinais chegam diferidos, entao o que eles contam ja pode nao
-		-- ser verdade. Criar e destruir no mesmo frame deixa um "added"
-		-- pendente que RESSUSCITA o objeto depois do teardown; o espelho disso
-		-- mata um objeto recem-criado se a tag piscou. construct ser idempotente
-		-- protege contra duplicata, nao contra isso. Vale o estado atual da
-		-- tag, nao o sinal.
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(template.Tag):Connect(function(instance: Instance)
@@ -207,12 +181,6 @@ local function templateFor(id: string): Registry.Template
 	return template
 end
 
--- Builds before tagging, which is the whole point of having this rather than
--- calling AddTag yourself. With SignalBehavior set to Deferred, AddTag does not
--- reach GetInstanceAddedSignal until the next resumption point, so tagging and
--- then reading the object back needs a wait, a Promise, or a guess. Building
--- first makes the object available on this line, and the signal that arrives
--- later finds it already there and does nothing.
 function ComponentManager.create(id: string, instance: Instance): any
 	const template = templateFor(id)
 	const object = construct(template, instance)

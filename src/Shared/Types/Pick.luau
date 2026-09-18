@@ -5,29 +5,28 @@ type ManifestExample = {
 }
 export type function Table(list: type, id: type): type
 	if not list:is("table") then
-		error(`[Manifest] list deve ser a manifest table, recebi {list.tag}`)
+		error(`[Manifest] list must be the manifest table, got {list.tag}`)
 	end
 
 	if id:is("any") or id:is("unknown") or id:is("never") then
 		return types.any
 	end
 
-	-- quantas opcoes um tipo descreve (para desempatar intersection)
-	local function largura(t: type): number?
-		local alvo = t
-		if alvo:is("table") then
-			local ix = alvo:readindexer()
+	local function width(t: type): number?
+		local target = t
+		if target:is("table") then
+			local ix = target:readindexer()
 			if not ix then
 				return nil
 			end
-			alvo = ix.result
+			target = ix.result
 		end
-		if alvo:is("singleton") then
+		if target:is("singleton") then
 			return 1
 		end
-		if alvo:is("union") then
+		if target:is("union") then
 			local n = 0
-			for _ in alvo:components() do
+			for _ in target:components() do
 				n += 1
 			end
 			return n
@@ -35,27 +34,25 @@ export type function Table(list: type, id: type): type
 		return nil
 	end
 
-	-- 1. INTERSECTION: fica o ramo mais estreito, sem depender de ordem
 	if id:is("intersection") then
-		local melhor, menor = nil, math.huge
-		for _, parte in id:components() do
-			local w = largura(parte)
-			if w and w < menor then
-				menor, melhor = w, parte
+		local best, narrowest = nil, math.huge
+		for _, part in id:components() do
+			local w = width(part)
+			if w and w < narrowest then
+				narrowest, best = w, part
 			end
 		end
-		if not melhor then
-			error("[Manifest] intersection sem ramo utilizavel (nenhum singleton, union ou array deles)")
+		if not best then
+			error("[Manifest] intersection has no usable branch (no singleton, union, or array of them)")
 		end
-		id = melhor
+		id = best
 	end
 
-	-- 2. ARRAY: desce no indexer
 	local fromArray = false
 	if id:is("table") then
 		local indexer = id:readindexer()
 		if not indexer then
-			error("[Manifest] esperava array de chaves, recebi table sem indexer")
+			error("[Manifest] expected an array of keys, got a table with no indexer")
 		end
 		fromArray = true
 		id = indexer.result
@@ -63,46 +60,43 @@ export type function Table(list: type, id: type): type
 
 	if id:is("string") then
 		error(
-			'[Manifest] WIDENED: as chaves viraram `string`. Use `:: { "A" | "B" }` no literal, ou passe a union direto'
+			'[Manifest] WIDENED: as keys viraram `string`. Use `:: { "A" | "B" }` no literal, ou passe a union direto'
 		)
 	end
 
-	-- 3. CHAVE UNICA e nao veio de array: devolve o servico direto
 	if id:is("singleton") and not fromArray then
-		local alvo = id:value()
+		local target = id:value()
 		local prop = list:readproperty(id)
 		if prop then
 			return prop
 		end
-		local disponiveis = {}
+		local available = {}
 		for key in list:properties() do
-			table.insert(disponiveis, tostring(key:value()))
+			table.insert(available, tostring(key:value()))
 		end
-		table.sort(disponiveis)
-		error(`[Manifest] "{alvo}" nao existe. Disponiveis: {table.concat(disponiveis, ", ")}`)
+		table.sort(available)
+		error(`[Manifest] "{target}" does not exist. Available: {table.concat(available, ", ")}`)
 	end
 
-	-- 4. coleta os pedidos
 	local pedidos = {}
 	if id:is("singleton") then
 		pedidos[id:value()] = true
 	elseif id:is("union") then
 		for _, c in id:components() do
 			if not c:is("singleton") then
-				error(`[Manifest] componentes da union devem ser singleton, recebi {c.tag}`)
+				error(`[Manifest] union components must be singletons, got {c.tag}`)
 			end
 			pedidos[c:value()] = true
 		end
 	else
-		error(`[Manifest] id deve ser singleton, union de singletons, ou array deles. Recebi {id.tag}`)
+		error(`[Manifest] id must be a singleton, a union of singletons, or an array of them. Got {id.tag}`)
 	end
 
-	-- 5. monta o subconjunto
 	local resultado = types.newtable()
 	for key, prop in list:properties() do
-		local nome = key:value()
-		if type(nome) == "string" and pedidos[nome] then
-			pedidos[nome] = nil
+		local name = key:value()
+		if type(name) == "string" and pedidos[name] then
+			pedidos[name] = nil
 			if prop.read then
 				resultado:setreadproperty(key, prop.read)
 			end
@@ -112,20 +106,19 @@ export type function Table(list: type, id: type): type
 		end
 	end
 
-	-- 6. o que sobrou foi pedido e nao existe
-	local faltando = {}
-	for nome in pedidos do
-		table.insert(faltando, nome)
+	local missing = {}
+	for name in pedidos do
+		table.insert(missing, name)
 	end
-	if #faltando > 0 then
-		table.sort(faltando)
-		local disponiveis = {}
+	if #missing > 0 then
+		table.sort(missing)
+		local available = {}
 		for key in list:properties() do
-			table.insert(disponiveis, tostring(key:value()))
+			table.insert(available, tostring(key:value()))
 		end
-		table.sort(disponiveis)
+		table.sort(available)
 		error(
-			`[Manifest] nao existe(m): {table.concat(faltando, ", ")}. Disponiveis: {table.concat(disponiveis, ", ")}`
+			`[Manifest] missing: {table.concat(missing, ", ")}. Available: {table.concat(available, ", ")}`
 		)
 	end
 
@@ -134,7 +127,7 @@ end
 
 export type function Map(list: type, id: type): type
 	if not list:is("table") then
-		error(`[Manifest] list deve ser a manifest table, recebi {list.tag}`)
+		error(`[Manifest] list must be the manifest table, got {list.tag}`)
 	end
 
 	local pedidos = {}
@@ -143,21 +136,21 @@ export type function Map(list: type, id: type): type
 	elseif id:is("union") then
 		for _, c in id:components() do
 			if not c:is("singleton") then
-				error(`[Manifest] componentes da union devem ser singleton, recebi {c.tag}`)
+				error(`[Manifest] union components must be singletons, got {c.tag}`)
 			end
 			pedidos[c:value()] = true
 		end
 	elseif id:is("never") then
 		return types.newtable()
 	else
-		error(`[Manifest] id deve ser singleton ou union de singletons. Recebi {id.tag}`)
+		error(`[Manifest] id must be a singleton or a union of singletons. Got {id.tag}`)
 	end
 
 	local resultado = types.newtable()
 	for key, prop in list:properties() do
-		local nome = key:value()
-		if type(nome) == "string" and pedidos[nome] then
-			pedidos[nome] = nil
+		local name = key:value()
+		if type(name) == "string" and pedidos[name] then
+			pedidos[name] = nil
 			if prop.read then
 				resultado:setreadproperty(key, prop.read)
 			end
@@ -167,25 +160,25 @@ export type function Map(list: type, id: type): type
 		end
 	end
 
-	local faltando = {}
-	for nome in pedidos do
-		table.insert(faltando, nome)
+	local missing = {}
+	for name in pedidos do
+		table.insert(missing, name)
 	end
-	if #faltando > 0 then
-		table.sort(faltando)
-		local disponiveis = {}
+	if #missing > 0 then
+		table.sort(missing)
+		local available = {}
 		for key in list:properties() do
-			table.insert(disponiveis, tostring(key:value()))
+			table.insert(available, tostring(key:value()))
 		end
-		table.sort(disponiveis)
+		table.sort(available)
 		error(
-			`[Manifest] nao existe(m): {table.concat(faltando, ", ")}. Disponiveis: {table.concat(disponiveis, ", ")}`
+			`[Manifest] missing: {table.concat(missing, ", ")}. Available: {table.concat(available, ", ")}`
 		)
 	end
 	return resultado
 end
 
-type CurrencyService = Table<ManifestExample, "CurrencyService"> --> AddCash: () -> (), SubtractCash: () -> ()
-type TwoServices = Table<ManifestExample, "PlayerService" | "DataService"> --> {RespawnChar: () -> (), RemoveChar: () -> ()}, {FetchData: () -> (), ClearData: () -> ()}
+type CurrencyService = Table<ManifestExample, "CurrencyService">
+type TwoServices = Table<ManifestExample, "PlayerService" | "DataService">
 
 return {}

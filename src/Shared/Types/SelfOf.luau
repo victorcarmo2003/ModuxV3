@@ -57,9 +57,6 @@ type _LeafSample = {
 	Method: (self: _LeafSample, n: number) -> (),
 }
 
--- Load-bearing: luau-lsp only evaluates an exported type function that is
--- instantiated at least once in its own file. Removing this breaks hover and
--- autocomplete for every `SelfOf.Build<...>` in the project.
 type _lspEvaluationAnchor = Build<_LeafSample, { Dependencies: {} }>
 
 export type function RequireOf(props: type): type
@@ -78,9 +75,6 @@ end
 
 type _PropsSample = { Require: { "Sample" } }
 
--- Load-bearing: luau-lsp only evaluates an exported type function that is
--- instantiated at least once in its own file. Removing either anchor breaks
--- hover and autocomplete for every use of that function in the project.
 type _lspAnchorRequireOf = RequireOf<_PropsSample>
 
 return {}

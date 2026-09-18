@@ -31,7 +31,7 @@ end
 
 function Signal:Connect(callback)
 	if type(callback) ~= "function" then
-		error("Callback deve ser uma função", 2)
+		error("Callback must be a function", 2)
 	end
 
 	local connection = {
@@ -93,7 +93,7 @@ end
 function Signal:Wait()
 	local thread = coroutine.running()
 	if not thread then
-		error("Wait() deve ser chamado em uma coroutine", 2)
+		error("Wait() must be called from a coroutine", 2)
 	end
 
 	local connection
