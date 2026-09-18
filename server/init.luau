@@ -19,6 +19,7 @@ Modux._templates = {
 }
 
 Modux._settings = {} :: Settings
+Modux._configured = false
 Modux._started = false
 
 function Modux.Service<ID, P>(
@@ -51,16 +52,33 @@ function Modux.Configure(settings: Settings)
 		error("[Modux] Configure must run before Start")
 	end
 	Modux._settings = settings
+	Modux._configured = true
 end
 
-function Modux.Start()
+-- Passar as settings aqui torna a ordem impossivel de errar, em vez de
+-- apenas detectavel: nao existe "antes do Start" para esquecer. Configure
+-- continua valendo para quem prefere separar as duas coisas.
+--
+-- As duas juntas viram erro. Deixar o argumento vencer em silencio seria o
+-- mesmo tipo de armadilha que a guarda do Configure acabou de fechar: duas
+-- fontes de verdade e nenhuma pista de qual ganhou.
+function Modux.Start(settings: Settings?)
+	if settings ~= nil and Modux._configured then
+		error("[Modux] settings came from both Configure and Start; use one of them")
+	end
 	Modux._started = true
-	Core.Start({ Modux._registry.Service }, Modux._templates.Component, Modules, Modux._settings)
+	Core.Start(
+		{ Modux._registry.Service },
+		Modux._templates.Component,
+		Modules,
+		settings or Modux._settings
+	)
 end
 
 function Modux.Stop()
 	Core.Stop()
 	Modux._started = false
+	Modux._configured = false
 end
 
 return Modux
