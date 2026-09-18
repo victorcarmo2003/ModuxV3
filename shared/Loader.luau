@@ -93,22 +93,34 @@ local function ordered(stores: { Store }): { Registry.Entry }
 	return all
 end
 
+-- Shared with the ComponentManager, which runs the same phases against an
+-- object rather than a singleton. One callback erroring must never take the
+-- others down, so each is its own pcall.
+function Loader.invoke(
+	object: any,
+	callbacks: { (any) -> () },
+	phase: string,
+	label: string,
+	profile: boolean
+)
+	for _, callback in callbacks do
+		if profile then
+			debug.profilebegin(`Modux.{phase}.{label}`)
+		end
+		const ok, err = pcall(callback, object)
+		if profile then
+			debug.profileend()
+		end
+		if not ok then
+			warn(`[Modux] {phase} of "{label}" errored: {err}`)
+		end
+	end
+end
+
 local function fire(entries: { Registry.Entry }, phase: "OnInit" | "OnStart", profile: boolean)
 	for _, entry in entries do
-		local instance = entry.Class :: any
-		local callbacks = instance._registry[phase]
-		for _, callback in callbacks do
-			if profile then
-				debug.profilebegin(`Modux.{phase}.{entry.ID}`)
-			end
-			local ok, err = pcall(callback, instance)
-			if profile then
-				debug.profileend()
-			end
-			if not ok then
-				warn(`[Modux] {phase} of "{entry.ID}" errored: {err}`)
-			end
-		end
+		const instance = entry.Class :: any
+		Loader.invoke(instance, instance._registry[phase], phase, entry.ID, profile)
 	end
 end
 
@@ -195,15 +207,11 @@ local function loadModules(moduleScripts: { ModuleScript })
 	end
 end
 
--- Returns the singletons by id. Components are injected from the same map, and
--- handing it back is what forces the ordering: nobody can build a component
--- before this function has returned, so a component's OnInit can never run
--- before the Controller or Service it depends on has started.
-function Loader.start(
-	stores: { Store },
-	moduleScripts: { ModuleScript }?,
-	options: Options?
-): { [string]: Registry.Entry }
+-- Split from run on purpose. Between the two, every singleton exists and has
+-- its dependencies, but nothing has booted yet, which is the only window where
+-- the ComponentManager can be handed the same map and still be usable from
+-- inside a Controller's OnStart.
+function Loader.prepare(stores: { Store }, moduleScripts: { ModuleScript }?): { [string]: Registry.Entry }
 	if started then
 		error("[Modux] Start was already called")
 	end
@@ -215,6 +223,13 @@ function Loader.start(
 
 	const byId = indexById(stores)
 	inject(stores, byId)
+	return byId
+end
+
+function Loader.run(stores: { Store }, options: Options?)
+	if not started then
+		error("[Modux] Loader.prepare must run before Loader.run")
+	end
 
 	const entries = ordered(stores)
 	const profile = (options and options.Profile) == true
@@ -222,7 +237,6 @@ function Loader.start(
 	fire(entries, "OnStart", profile)
 
 	collectTicks(entries)
-	return byId
 end
 
 function Loader.stop()

@@ -23,8 +23,19 @@ function Core.Start(
 		Profile = s.Profile == true,
 	}
 
-	const byId = Loader.start(stores, moduleScripts, options)
-	ComponentManager.start(templates, byId, options)
+	-- Four steps because two different orderings have to hold at once.
+	--
+	-- Tag-driven construction happens last: nobody asked for a component to be
+	-- built at a particular moment, so it must not be built before the
+	-- Controller or Service it depends on has started.
+	--
+	-- An explicit Create is the opposite. It says build this now, and a
+	-- Controller's OnStart is exactly where that gets called, so the manager
+	-- has to be usable before the Loader fires anything.
+	const byId = Loader.prepare(stores, moduleScripts)
+	ComponentManager.prepare(templates, byId, options)
+	Loader.run(stores, options)
+	ComponentManager.start()
 end
 
 function Core.Stop()
