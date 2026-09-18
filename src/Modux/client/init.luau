@@ -19,6 +19,7 @@ Modux._templates = {
 }
 
 Modux._settings = {} :: Settings
+Modux._started = false
 
 function Modux.Controller<ID, P>(
 	id: ID & Types.ControllerKey,
@@ -45,16 +46,24 @@ function Modux.Component<ID, P>(id: ID & Types.ComponentKey, props: (P | Types.C
 		) :: any
 end
 
+-- Configure so guarda; quem le e o Start. Chamar depois nao faria nada, e
+-- nao fazer nada em silencio e o pior resultado possivel: voce nao entende
+-- por que o DebugLevel nao ligou.
 function Modux.Configure(settings: Settings)
+	if Modux._started then
+		error("[Modux] Configure must run before Start")
+	end
 	Modux._settings = settings
 end
 
 function Modux.Start()
+	Modux._started = true
 	Core.Start({ Modux._registry.Controller }, Modux._templates.Component, Modules, Modux._settings)
 end
 
 function Modux.Stop()
 	Core.Stop()
+	Modux._started = false
 end
 
 return Modux
