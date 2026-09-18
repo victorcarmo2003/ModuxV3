@@ -3,7 +3,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Loader = require(ReplicatedStorage.shared.Modux.Loader)
 local Registry = require(ReplicatedStorage.shared.Modux.Classes.Registry)
-local Utils = require(ReplicatedStorage.shared.Utils)
+local Libs = require(ReplicatedStorage.shared.Modux.Libs)
 
 export type Options = Loader.Options
 
@@ -134,7 +134,7 @@ function ComponentManager.prepare(
 	for _, template in templates do
 		const class = template.Class :: any
 		class.Dependencies = Loader.resolve(template.ID, template.Dependency, byId)
-		class.Utils = Utils
+		class.Libs = Libs
 		class.Components = access
 
 		-- Uma closure por template, nao por objeto: ela fecha sobre o template

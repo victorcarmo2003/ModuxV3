@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Registry = require(ReplicatedStorage.shared.Modux.Classes.Registry)
-local Utils = require(ReplicatedStorage.shared.Utils)
+local Libs = require(ReplicatedStorage.shared.Modux.Libs)
 
 export type Store = Registry.Store
 
@@ -99,7 +99,7 @@ local function inject(stores: { Store }, byId: { [string]: Registry.Entry })
 		for _, entry in store do
 			const instance = entry.Class :: any
 			instance.Dependencies = Loader.resolve(entry.ID, entry.Dependency, byId)
-			instance.Utils = Utils
+			instance.Libs = Libs
 		end
 	end
 end
