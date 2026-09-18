@@ -1,7 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Pick = require(ReplicatedStorage.shared.Types.Pick)
-local SelfOf = require(ReplicatedStorage.shared.Types.SelfOf)
+local Pick = require(ReplicatedStorage.shared.Modux.Types.Pick)
+local SelfOf = require(ReplicatedStorage.shared.Modux.Types.SelfOf)
 local Libs = require(ReplicatedStorage.shared.Modux.Libs)
 local Manifest = require(script.Parent.Manifest)
 
