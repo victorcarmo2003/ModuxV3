@@ -5,17 +5,21 @@ Controller.__index = Controller
 export type Registry = {
 	OnInit: { (any) -> () },
 	OnStart: { (any) -> () },
-	OnTick: { { callback: (any) -> (), frequency: number } },
+	OnTick: { { callback: (any) -> (), tickRate: number, priority: number } },
 }
 
-function Controller:OnTick(callback, frequency: number?)
+-- priority ordena a execucao dentro do frame, maior primeiro, igual ao
+-- Priority de Controller e Service. Importa quando o tick de um alimenta o
+-- do outro no mesmo frame.
+function Controller:OnTick(callback, tickRate: number?, priority: number?)
 	const onTickList = self._registry.OnTick
 	if type(callback) ~= "function" then
 		error(`[OnTick] Must be callback function, got {type(callback)}`)
 	end
 	table.insert(onTickList, {
 		callback = callback,
-		frequency = frequency or 1,
+		tickRate = tickRate or 1,
+		priority = priority or 1,
 	})
 end
 

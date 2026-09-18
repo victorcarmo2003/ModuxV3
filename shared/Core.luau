@@ -4,10 +4,17 @@ local ComponentManager = require(ReplicatedStorage.shared.Modux.ComponentManager
 local Loader = require(ReplicatedStorage.shared.Modux.Loader)
 local Registry = require(ReplicatedStorage.shared.Modux.Classes.Registry)
 
+export type DebugLevel = Loader.DebugLevel
+
+-- Profiling e DebugLevel sao coisas diferentes de proposito: o primeiro marca
+-- as fases no MicroProfiler, que so serve com o MicroProfiler aberto; o
+-- segundo escreve no output, que e o que se olha primeiro.
+--
+-- TickRate nao mora aqui. Cadencia e por callback, nao por jogo, entao ela e o
+-- segundo argumento de OnTick.
 export type Settings = {
-	LogLevel: ("none" | "error" | "warn" | "info")?,
-	Profile: boolean?,
-	TickRate: number?,
+	Profiling: boolean?,
+	DebugLevel: DebugLevel?,
 }
 
 const Core = {}
@@ -19,20 +26,22 @@ function Core.Start(
 	settings: Settings?
 )
 	const s = (settings or {}) :: Settings
-	const options = {
-		Profile = s.Profile == true,
+	const options: Loader.Options = {
+		Profiling = s.Profiling == true,
+		Debug = s.DebugLevel or "None",
 	}
 
-	-- Four steps because two different orderings have to hold at once.
+	-- Quatro passos porque duas ordens diferentes precisam valer ao mesmo
+	-- tempo.
 	--
-	-- Tag-driven construction happens last: nobody asked for a component to be
-	-- built at a particular moment, so it must not be built before the
-	-- Controller or Service it depends on has started.
+	-- Construcao por tag e a ultima: ninguem pediu aquele componente naquele
+	-- instante, entao ele nao pode subir antes do Controller ou Service de que
+	-- depende ter startado.
 	--
-	-- An explicit Create is the opposite. It says build this now, and a
-	-- Controller's OnStart is exactly where that gets called, so the manager
-	-- has to be usable before the Loader fires anything.
-	const byId = Loader.prepare(stores, moduleScripts)
+	-- Um Create explicito e o oposto. Ele diz construa agora, e o OnStart de um
+	-- Controller e exatamente onde isso e chamado, entao o manager tem que
+	-- estar utilizavel antes de o Loader disparar qualquer coisa.
+	const byId = Loader.prepare(stores, moduleScripts, options)
 	ComponentManager.prepare(templates, byId, options)
 	Loader.run(stores, options)
 	ComponentManager.start()
