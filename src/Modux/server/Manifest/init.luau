@@ -21,6 +21,7 @@ export type ComponentAccess = {
 		Get: (self: any, instance: Instance) -> ZoneComponent.Public?,
 		Create: (self: any, instance: Instance) -> ZoneComponent.Public,
 		All: (self: any) -> { ZoneComponent.Public },
+		Destroy: (self: any, instance: Instance) -> (),
 	},
 }
 

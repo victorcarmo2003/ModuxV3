@@ -23,6 +23,7 @@ export type ComponentAccess = {
 		Get: (self: any, instance: Instance) -> HighlightComponent.Public?,
 		Create: (self: any, instance: Instance) -> HighlightComponent.Public,
 		All: (self: any) -> { HighlightComponent.Public },
+		Destroy: (self: any, instance: Instance) -> (),
 	},
 }
 

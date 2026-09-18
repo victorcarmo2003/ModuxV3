@@ -107,6 +107,9 @@ local function accessTable(): { [string]: any }
 			All = function(_: any): { any }
 				return ComponentManager.all(id)
 			end,
+			Destroy = function(_: any, instance: Instance)
+				ComponentManager.destroy(id, instance)
+			end,
 		}
 	end
 	return access
@@ -133,6 +136,17 @@ function ComponentManager.prepare(
 		class.Dependencies = Loader.resolve(template.ID, template.Dependency, byId)
 		class.Utils = Utils
 		class.Components = access
+
+		-- Uma closure por template, nao por objeto: ela fecha sobre o template
+		-- e le a Instance do self, entao todos os objetos daquela classe a
+		-- alcancam pela metatable sem custo por instancia.
+		--
+		-- Mora aqui, e nao em Classes/Component, porque a base teria que
+		-- requerer o ComponentManager so para isso.
+		const id = template.ID
+		class.Destroy = function(object: any)
+			ComponentManager.destroy(id, object.Instance)
+		end
 	end
 
 	-- Singletons were injected by Loader.prepare, which ran before this and
