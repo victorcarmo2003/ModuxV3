@@ -8,9 +8,6 @@ export type Registry = {
 	OnTick: { { callback: (any) -> (), tickRate: number, priority: number } },
 }
 
--- priority ordena a execucao dentro do frame, maior primeiro, igual ao
--- Priority de Controller e Service. Importa quando o tick de um alimenta o
--- do outro no mesmo frame.
 function Controller:OnTick(callback, tickRate: number?, priority: number?)
 	const onTickList = self._registry.OnTick
 	if type(callback) ~= "function" then

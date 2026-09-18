@@ -53,13 +53,6 @@ function Registry.register(kind: string, Base: any, store: Store, id: string, pr
 	return instance
 end
 
--- A Component declaration is a class, not an object. There is one declaration
--- and N live objects, one per tagged Instance, appearing and disappearing while
--- the game runs. So it is stored apart from the singletons the Loader drives.
---
--- Base.New() still builds what gets returned, because that is what carries
--- _registry and the metatable that make `X:OnInit(...)` work at declaration
--- time. The callbacks belong to the class; each object receives them as self.
 function Registry.template(kind: string, Base: any, templates: Templates, id: string, props: any): any
 	if templates[id] ~= nil then
 		error(`[Modux - {kind}] Duplicated ID: {id}`)

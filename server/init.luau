@@ -44,9 +44,6 @@ function Modux.Component<ID, P>(
 		) :: any
 end
 
--- Configure so guarda; quem le e o Start. Chamar depois nao faria nada, e
--- nao fazer nada em silencio e o pior resultado possivel: voce nao entende
--- por que o DebugLevel nao ligou.
 function Modux.Configure(settings: Settings)
 	if Modux._started then
 		error("[Modux] Configure must run before Start")
@@ -55,13 +52,6 @@ function Modux.Configure(settings: Settings)
 	Modux._configured = true
 end
 
--- Passar as settings aqui torna a ordem impossivel de errar, em vez de
--- apenas detectavel: nao existe "antes do Start" para esquecer. Configure
--- continua valendo para quem prefere separar as duas coisas.
---
--- As duas juntas viram erro. Deixar o argumento vencer em silencio seria o
--- mesmo tipo de armadilha que a guarda do Configure acabou de fechar: duas
--- fontes de verdade e nenhuma pista de qual ganhou.
 function Modux.Start(settings: Settings?)
 	if settings ~= nil and Modux._configured then
 		error("[Modux] settings came from both Configure and Start; use one of them")

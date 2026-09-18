@@ -9,9 +9,6 @@ export type Registry = {
 	OnTick: { { callback: (any) -> (), tickRate: number, priority: number } },
 }
 
--- priority ordena a execucao dentro do frame, maior primeiro, igual ao
--- Priority de Controller e Service. Importa quando o tick de um alimenta o
--- do outro no mesmo frame.
 function Component:OnTick(callback, tickRate: number?, priority: number?)
 	const onTickList = self._registry.OnTick
 	if type(callback) ~= "function" then
@@ -40,9 +37,6 @@ function Component:OnStart(callback)
 	table.insert(onStartList, callback)
 end
 
--- Only Component has this. A Controller or a Service is a singleton and lives
--- as long as the session; a component object goes away whenever its tag is
--- removed or its Instance is destroyed.
 function Component:OnDestroy(callback)
 	const onDestroyList = self._registry.OnDestroy
 	if type(callback) ~= "function" then
