@@ -13,16 +13,19 @@ export type Options = {
 	Profile: boolean,
 }
 
-export type TickHandle = {}
-
-type Tick = {
-	owner: TickHandle,
+export type Tick = {
 	instance: any,
 	callback: (any, number) -> (),
 	period: number,
 	elapsed: number,
 	dead: boolean,
 }
+
+-- Holds the rows it owns, rather than being an identity the removal has to go
+-- looking for. Scanning the whole list per removal made tearing down N
+-- components O(N^2): destroying an area with a thousand tagged instances spent
+-- a million iterations finding rows it was already holding.
+export type TickHandle = { Tick }
 
 local Loader = {}
 
@@ -151,7 +154,15 @@ local function ensureClock()
 			if not tick.dead then
 				tick.elapsed += delta
 				if tick.elapsed >= tick.period then
-					tick.elapsed -= tick.period
+					-- Modulo, not `-= period`. A single Heartbeat after a hitch
+					-- can carry a delta of a second or more; subtracting one
+					-- period leaves the rest as debt, which then gets paid off
+					-- by firing every frame until it drains. That turns a lag
+					-- spike into a burst of catch-up ticks at exactly the
+					-- moment the game can least afford them. Missed ticks are
+					-- dropped; the fractional phase is kept so a normal frame
+					-- still does not drift.
+					tick.elapsed %= tick.period
 					local ok, err = pcall(tick.callback, tick.instance, delta)
 					if not ok then
 						warn(`[Modux] OnTick errored: {err}`)
@@ -168,14 +179,15 @@ end
 function Loader.addTicks(instance: any, ticks: { { callback: (any, number) -> (), frequency: number } }): TickHandle
 	const handle: TickHandle = {}
 	for _, tick in ticks do
-		table.insert(ticking, {
-			owner = handle,
+		const row: Tick = {
 			instance = instance,
 			callback = tick.callback,
 			period = 1 / math.max(tick.frequency, 0.001),
 			elapsed = 0,
 			dead = false,
-		})
+		}
+		table.insert(ticking, row)
+		table.insert(handle, row)
 	end
 	if #ticks > 0 then
 		ensureClock()
@@ -184,8 +196,8 @@ function Loader.addTicks(instance: any, ticks: { { callback: (any, number) -> ()
 end
 
 function Loader.removeTicks(handle: TickHandle)
-	for _, tick in ticking do
-		if tick.owner == handle and not tick.dead then
+	for _, tick in handle do
+		if not tick.dead then
 			tick.dead = true
 			buryCount += 1
 		end
@@ -233,6 +245,7 @@ function Loader.run(stores: { Store }, options: Options?)
 
 	const entries = ordered(stores)
 	const profile = (options and options.Profile) == true
+
 	fire(entries, "OnInit", profile)
 	fire(entries, "OnStart", profile)
 
