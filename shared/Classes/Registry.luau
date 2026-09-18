@@ -8,6 +8,16 @@ export type Entry = {
 
 export type Store = { Entry }
 
+export type Template = {
+	ID: string,
+	Tag: string,
+	Class: any,
+	Dependency: { string },
+	Priority: number,
+}
+
+export type Templates = { [string]: Template }
+
 const Registry = {}
 
 function Registry.normalizeRequire(value: any): { string }
@@ -41,6 +51,32 @@ function Registry.register(kind: string, Base: any, store: Store, id: string, pr
 	})
 
 	return instance
+end
+
+-- A Component declaration is a class, not an object. There is one declaration
+-- and N live objects, one per tagged Instance, appearing and disappearing while
+-- the game runs. So it is stored apart from the singletons the Loader drives.
+--
+-- Base.New() still builds what gets returned, because that is what carries
+-- _registry and the metatable that make `X:OnInit(...)` work at declaration
+-- time. The callbacks belong to the class; each object receives them as self.
+function Registry.template(kind: string, Base: any, templates: Templates, id: string, props: any): any
+	if templates[id] ~= nil then
+		error(`[Modux - {kind}] Duplicated ID: {id}`)
+	end
+
+	const p = (props or {}) :: { Require: any, Priority: number?, Tag: string? }
+	const class = Base.New()
+
+	templates[id] = {
+		ID = id,
+		Tag = p.Tag or id,
+		Class = class :: any,
+		Dependency = Registry.normalizeRequire(p.Require),
+		Priority = p.Priority or 1,
+	}
+
+	return class
 end
 
 return Registry
