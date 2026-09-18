@@ -10,7 +10,7 @@ const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton" } })
 function Zombie:Heal(amount: number, alvo: Instance)
 	self.Dependencies.Skeleton:ShotArrow()    -- tipado
 	self.Components.Highlight:Create(alvo)    -- tipado
-	self.Utils.Signal.new()                   -- tipado
+	self.Libs.Signal.new()                    -- tipado
 end
 ```
 
@@ -108,11 +108,27 @@ módulo, então a aba de memória mostra quem alocou o quê.
 
 ---
 
+## Libs: dependência de dados, não de código
+
+O core não requer Promise, Signal nem rede. Ele requer um arquivo que o
+gerador escreve varrendo `src/Libs`, e injeta o resultado em `self.Libs`:
+
+```lua
+self.Libs.Signal.new()      -- tipado, sem require no teu arquivo
+self.Libs.Inexistente       -- Key 'Inexistente' not found
+```
+
+A lib não precisa aderir a contrato nenhum — o tipo sai de `typeof(require(...))`.
+Apagar uma lib da pasta não quebra o framework: a entrada some do tipo e quem
+usava falha no lugar certo. É o que torna o Modux publicável sem arrastar
+biblioteca de terceiro junto.
+
 ## O que é framework e o que é exemplo
 
 ```
 src/Modux/      framework      client, server e shared
-src/Shared/     framework      Types (SelfOf, Pick) e Utils (Signal, Promise, FSM)
+src/Shared/     framework      Types (SelfOf, Pick)
+src/Libs/       suas libs      Signal, Promise, FSM — injetadas em self.Libs
 src/Entity/     exemplo        Zombie, Skeleton
 src/Classes/    exemplo        Default
 src/Components/ exemplo        HighlightComponent, ZoneComponent
@@ -168,7 +184,8 @@ Manifests separados, dividir por lado quase triplica a folga. Cinco formas de
 reorganizar os tipos foram medidas e nenhuma ganhou do desenho atual.
 
 **Sem rede.** Comunicação client/server ainda não existe. Hoje o framework
-impede a travessia, mas não oferece a ponte.
+impede a travessia, mas não oferece a ponte. Quando existir, entra como lib em
+`src/Libs`, não como parte do core.
 
 **Anotação onde o gerador não adivinha.** Literal e função ele lê sozinho; o
 resto pede `::`.

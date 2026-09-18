@@ -2,7 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Pick = require(ReplicatedStorage.shared.Types.Pick)
 local SelfOf = require(ReplicatedStorage.shared.Types.SelfOf)
-local Utils = require(ReplicatedStorage.shared.Utils)
+local Libs = require(ReplicatedStorage.shared.Modux.Libs)
 local Manifest = require(script.Parent.Manifest)
 
 export type ServiceKey = keyof<Manifest.AllServices>
@@ -23,7 +23,7 @@ export type ServiceSelf<ID, P> = SelfOf.Build<
 	index<Manifest.AllServices, ID>,
 	{
 		Dependencies: Pick.Table<Manifest.AllServices, SelfOf.RequireOf<P>>,
-		Utils: Utils.Api,
+		Libs: Libs.Api,
 		Components: Manifest.ComponentAccess,
 	}
 >
@@ -32,7 +32,7 @@ export type ComponentSelf<ID, P> = SelfOf.Build<
 	index<Manifest.AllComponents, ID>,
 	{
 		Dependencies: Pick.Table<Manifest.AllServices, SelfOf.RequireOf<P>>,
-		Utils: Utils.Api,
+		Libs: Libs.Api,
 		Components: Manifest.ComponentAccess,
 		Destroy: (self: any) -> (),
 	}

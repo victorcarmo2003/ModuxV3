@@ -8,6 +8,12 @@
 			"shared": {
 				"$className": "Folder",
 				"$ignoreUnknownInstances": false,
+				"Libs": {
+					"$ignoreUnknownInstances": false,
+					"$path": {
+						"optional": "src/Libs"
+					}
+				},
 				"Modux": {
 					"$path": {
 						"optional": "src/Modux/shared"
@@ -16,12 +22,7 @@
 				"Types": {
 					"$ignoreUnknownInstances": false,
 					"$path": {
-						"optional": "src/Types/shared"
-					}
-				},
-				"Utils": {
-					"$path": {
-						"optional": "src/Utils/Shared"
+						"optional": "src/Shared/Types"
 					}
 				}
 			}
