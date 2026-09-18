@@ -16,4 +16,12 @@ export type AllComponents = {
 	ZoneComponent: ZoneComponent.Public,
 }
 
+export type ComponentAccess = {
+	ZoneComponent: {
+		Get: (self: any, instance: Instance) -> ZoneComponent.Public?,
+		Create: (self: any, instance: Instance) -> ZoneComponent.Public,
+		All: (self: any) -> { ZoneComponent.Public },
+	},
+}
+
 return {}
