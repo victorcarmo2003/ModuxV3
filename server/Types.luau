@@ -14,7 +14,7 @@ export type ServiceProps = {
 }
 
 export type ComponentProps = {
-	Require: { ComponentKey },
+	Require: { ServiceKey },
 	Priority: number?,
 	Tag: string?,
 }
@@ -24,32 +24,30 @@ export type ServiceSelf<ID, P> = SelfOf.Build<
 	{
 		Dependencies: Pick.Table<Manifest.AllServices, SelfOf.RequireOf<P>>,
 		Utils: Utils.Api,
+		Components: Manifest.ComponentAccess,
 	}
 >
 
 export type ComponentSelf<ID, P> = SelfOf.Build<
 	index<Manifest.AllComponents, ID>,
 	{
-		Dependencies: Pick.Table<Manifest.AllComponents, SelfOf.RequireOf<P>>,
+		Dependencies: Pick.Table<Manifest.AllServices, SelfOf.RequireOf<P>>,
 		Utils: Utils.Api,
-		Instance: Instance,
+		Components: Manifest.ComponentAccess,
 	}
 >
 
 export type ServiceBase<ID, P> = {
-	GetComponent: (self: any) -> (),
-	CreateComponent: (self: any) -> (),
 	OnTick: (self: any, callback: (self: ServiceSelf<ID, P>) -> (), frequency: number?) -> (),
 	OnInit: (self: any, callback: (self: ServiceSelf<ID, P>) -> ()) -> (),
 	OnStart: (self: any, callback: (self: ServiceSelf<ID, P>) -> ()) -> (),
 }
 
 export type ComponentBase<ID, P> = {
-	GetComponent: (self: any) -> (),
-	CreateComponent: (self: any) -> (),
 	OnTick: (self: any, callback: (self: ComponentSelf<ID, P>) -> (), frequency: number?) -> (),
 	OnInit: (self: any, callback: (self: ComponentSelf<ID, P>) -> ()) -> (),
 	OnStart: (self: any, callback: (self: ComponentSelf<ID, P>) -> ()) -> (),
+	OnDestroy: (self: any, callback: (self: ComponentSelf<ID, P>) -> ()) -> (),
 }
 
 export type ServiceReturn<ID, P> = setmetatable<ServiceSelf<ID, P>, { __index: ServiceBase<ID, P> }>

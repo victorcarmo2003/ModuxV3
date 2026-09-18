@@ -90,6 +90,28 @@ local function ordered(): { Registry.Template }
 	return all
 end
 
+-- The runtime half of Manifest.ComponentAccess: one entry per declared
+-- component, so `self.Components.Whatever:Get(instance)` needs no id string
+-- and no generic. Built once and shared; the accessor holds the id in a
+-- closure, so the `self` these take is the accessor table and goes unused.
+local function accessTable(): { [string]: any }
+	const access = {}
+	for id in templates do
+		access[id] = {
+			Get = function(_: any, instance: Instance): any?
+				return ComponentManager.get(id, instance)
+			end,
+			Create = function(_: any, instance: Instance): any
+				return ComponentManager.create(id, instance)
+			end,
+			All = function(_: any): { any }
+				return ComponentManager.all(id)
+			end,
+		}
+	end
+	return access
+end
+
 -- Dependencies land here, before anything boots, so that an explicit Create
 -- from inside a Controller's OnStart finds a usable manager.
 function ComponentManager.prepare(
@@ -104,10 +126,20 @@ function ComponentManager.prepare(
 	templates = declared
 	options = opts
 
+	const access = accessTable()
+
 	for _, template in templates do
 		const class = template.Class :: any
 		class.Dependencies = Loader.resolve(template.ID, template.Dependency, byId)
 		class.Utils = Utils
+		class.Components = access
+	end
+
+	-- Singletons were injected by Loader.prepare, which ran before this and
+	-- could not know about components.
+	for _, entry in byId do
+		const class = entry.Class :: any
+		class.Components = access
 	end
 end
 
