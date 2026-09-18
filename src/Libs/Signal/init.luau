@@ -84,7 +84,7 @@ function Signal:Fire(...)
 		if connection.Connected then
 			local success, err = pcall(connection._callback, ...)
 			if not success then
-				error("Erro ao executar callback: " .. tostring(err), 2)
+				warn(`[Signal] a listener errored: {err}`)
 			end
 		end
 	end
