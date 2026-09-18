@@ -34,6 +34,7 @@ export type ComponentSelf<ID, P> = SelfOf.Build<
 		Dependencies: Pick.Table<Manifest.AllServices, SelfOf.RequireOf<P>>,
 		Utils: Utils.Api,
 		Components: Manifest.ComponentAccess,
+		Destroy: (self: any) -> (),
 	}
 >
 
