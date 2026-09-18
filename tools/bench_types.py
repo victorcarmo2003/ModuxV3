@@ -260,7 +260,9 @@ def medir(n: int, m: int, s: int, callbacks: bool):
 
     rodar("rojo sourcemap default.project.json -o sourcemap.json", "rojo")
 
-    arquivos = [str(p) for p in (RAIZ / "src").rglob("*.luau")]
+    # Relativo, nao absoluto: a N=200 sao ~490 arquivos, e o caminho completo
+    # estoura o limite de 32 KB de linha de comando do Windows.
+    arquivos = [str(p.relative_to(RAIZ)) for p in (RAIZ / "src").rglob("*.luau")]
     cmd = [SERVER, "analyze", "--sourcemap=sourcemap.json", "--flag:LuauSolverV2=true"]
     defs = definitions()
     if defs:
