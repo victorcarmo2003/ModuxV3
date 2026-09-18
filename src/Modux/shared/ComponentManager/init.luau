@@ -165,16 +165,26 @@ function ComponentManager.start()
 	end
 
 	for _, template in ordered() do
+		-- Os dois sinais chegam diferidos, entao o que eles contam ja pode nao
+		-- ser verdade. Criar e destruir no mesmo frame deixa um "added"
+		-- pendente que RESSUSCITA o objeto depois do teardown; o espelho disso
+		-- mata um objeto recem-criado se a tag piscou. construct ser idempotente
+		-- protege contra duplicata, nao contra isso. Vale o estado atual da
+		-- tag, nao o sinal.
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(template.Tag):Connect(function(instance: Instance)
-				construct(template, instance)
+				if CollectionService:HasTag(instance, template.Tag) then
+					construct(template, instance)
+				end
 			end)
 		)
 		table.insert(
 			connections,
 			CollectionService:GetInstanceRemovedSignal(template.Tag):Connect(function(instance: Instance)
-				teardown(template, instance)
+				if not CollectionService:HasTag(instance, template.Tag) then
+					teardown(template, instance)
+				end
 			end)
 		)
 
