@@ -13,6 +13,17 @@
             "problemMatcher": []
         },
         {
+            "label": "modux watch",
+            "type": "shell",
+            "command": "modux watch",
+            "isBackground": true,
+            "presentation": {
+                "panel": "dedicated",
+                "group": "dev"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "sourcemap watch",
             "type": "shell",
             "command": "rojo sourcemap --watch default.project.json --output sourcemap.json",
@@ -38,6 +49,7 @@
             "label": "dev",
             "dependsOn": [
                 "rogen watch",
+                "modux watch",
                 "rojo serve",
                 "sourcemap watch"
             ],

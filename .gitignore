@@ -1,13 +1,5 @@
-# Project place file
 /ModuxV3.rbxlx
-
-# Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
-
 sourcemap.json
-
-# luau-analyze (ver tools/analyze.ps1)
-luau*.exe
-.luau-mirror/
 __pycache__/

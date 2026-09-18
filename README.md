@@ -7,9 +7,9 @@ nada.
 --!strict
 const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton" } })
 
-function Zombie:Heal(amount: number, alvo: Instance)
+function Zombie:Heal(amount: number, target: Instance)
 	self.Dependencies.Skeleton:ShotArrow()    -- tipado
-	self.Components.Highlight:Create(alvo)    -- tipado
+	self.Components.Highlight:Create(target)  -- tipado
 	self.Libs.Signal.new()                    -- tipado
 end
 ```
@@ -64,7 +64,7 @@ tag é o próprio ID.
 ```lua
 const Highlight = Modux.Component("Highlight", { Require = { "Render" } })
 
-function Highlight:Acender()
+function Highlight:TurnOn()
 	self.Instance.Color = Color3.new(1, 1, 0)   -- Instance sempre existe
 end
 
@@ -123,20 +123,24 @@ Apagar uma lib da pasta não quebra o framework: a entrada some do tipo e quem
 usava falha no lugar certo. É o que torna o Modux publicável sem arrastar
 biblioteca de terceiro junto.
 
-## O que é framework e o que é exemplo
+## Estrutura
 
 ```
-src/Modux/      framework      client, server e shared
-src/Shared/     framework      Types (SelfOf, Pick)
-src/Libs/       suas libs      Signal, Promise, FSM — injetadas em self.Libs
-src/Entity/     exemplo        Zombie, Skeleton
-src/Classes/    exemplo        Default
-src/Components/ exemplo        HighlightComponent, ZoneComponent
-src/Services/   exemplo        DataService, SaveService
+src/Modux/      framework    client, server e shared
+src/Shared/     framework    Types (SelfOf, Pick, Occlude, Struct, Union) e tablejs
+src/Libs/       suas libs    Signal, Promise, FSM — injetadas em self.Libs
 ```
 
-Só as duas primeiras são o framework. O resto é banco de provas e some quando
-isto virar dependência.
+Não há exemplo no repositório. Os teus Controllers, Services e Components
+entram em qualquer pasta sob `src/`, e o lado sai do caminho: pasta `client`
+vai para StarterPlayerScripts, `server` para ServerScriptService, e o resto é
+shared.
+
+```
+src/Entity/client/Zombie/init.luau      -> Controller de client
+src/Systems/server/Data/init.luau       -> Service de server
+src/Components/client/Highlight/init.luau
+```
 
 ## Gerado, não editar
 
