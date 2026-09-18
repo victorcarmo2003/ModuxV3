@@ -9,10 +9,6 @@ export type Registry = {
 	OnTick: { { callback: (any) -> (), frequency: number } },
 }
 
-function Component:CreateComponent() end
-
-function Component:GetComponent() end
-
 function Component:OnTick(callback, frequency: number?)
 	const onTickList = self._registry.OnTick
 	if type(callback) ~= "function" then
