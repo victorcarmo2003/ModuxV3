@@ -15,7 +15,7 @@
 		{
 			"label": "modux watch",
 			"type": "shell",
-			"command": "modux watch --fix --interval 100",
+			"command": "modux watch --fix --nudge --interval 100",
 			"isBackground": true,
 			"presentation": {
 				"panel": "dedicated",
