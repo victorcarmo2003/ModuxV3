@@ -24,17 +24,6 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "sourcemap watch",
-			"type": "shell",
-			"command": "rojo sourcemap --watch default.project.json --output sourcemap.json",
-			"isBackground": true,
-			"presentation": {
-				"panel": "dedicated",
-				"group": "dev"
-			},
-			"problemMatcher": []
-		},
-		{
 			"label": "rojo serve",
 			"type": "shell",
 			"command": "rojo serve",
@@ -50,8 +39,7 @@
 			"dependsOn": [
 				"rogen watch",
 				"modux watch",
-				"rojo serve",
-				"sourcemap watch"
+				"rojo serve"
 			],
 			"dependsOrder": "parallel",
 			"group": {
