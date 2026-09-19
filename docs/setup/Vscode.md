@@ -45,7 +45,7 @@ todo o trabalho de tipo; a segunda é o formatador.
     "modux.studioBridge.port": 9001,
     "editor.formatOnSave": true,
     "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 50, # define o quão rápido o LSP atualiza
+    "files.autoSaveDelay": 300, // define o quão rápido o LSP atualiza
 }
 ```
 

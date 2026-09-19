@@ -46,7 +46,7 @@ does all the type work; the second is the formatter.
     "modux.studioBridge.port": 9001,
     "editor.formatOnSave": true,
     "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 50, # sets how fast the LSP updates
+    "files.autoSaveDelay": 300, // sets how fast the LSP updates
 }
 ```
 
