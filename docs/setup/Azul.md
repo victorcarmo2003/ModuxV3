@@ -50,7 +50,7 @@ Medido com duas instâncias do Studio na mesma place, cada uma com seu daemon:
 | propagação de uma edição, volta completa | **1 segundo** |
 | os dois editando **arquivos diferentes** | converge, hashes idênticos |
 | os dois editando **o mesmo arquivo** | **diverge em silêncio** |
-| apagar uma pasta | o watcher sobrevive |
+| apagar uma pasta | ver [abaixo](#apagar-pasta) |
 
 ::: danger O mesmo arquivo ao mesmo tempo
 Em três tentativas, duas terminaram com cada máquina guardando a própria
@@ -203,7 +203,7 @@ prontos.
 | fonte da verdade | o disco | o Studio |
 | duas pessoas ao mesmo tempo | não | sim, via Team Create |
 | arquitetura por feature | sim, via [Rogen](/setup/Rogen) | não, espelha o DataModel |
-| apagar pasta | [derruba o watch](/setup/Rojo#crash) | sobrevive |
+| apagar pasta com unlink | [derruba o watch](/setup/Rojo#crash) | a medir |
 | project file | `default.project.json` | nenhum |
 | maturidade | anos de uso | mantido por uma pessoa, recente |
 

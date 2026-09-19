@@ -51,7 +51,7 @@ Measured with two Studio instances on the same place, each with its own daemon:
 | propagating one edit, full round trip | **1 second** |
 | both editing **different files** | converges, identical hashes |
 | both editing **the same file** | **diverges silently** |
-| deleting a folder | the watcher survives |
+| deleting a folder | see [below](#deleting-a-folder) |
 
 ::: danger The same file at the same time
 Out of three attempts, two ended with each machine keeping its own version:
@@ -205,7 +205,7 @@ types ready-made.
 | source of truth | the filesystem | Studio |
 | two people at once | no | yes, through Team Create |
 | feature-based architecture | yes, via [Rogen](/en/setup/Rogen) | no, mirrors the DataModel |
-| deleting a folder | [takes the watch down](/en/setup/Rojo#crash) | survives |
+| deleting a folder by unlink | [takes the watch down](/en/setup/Rojo#crash) | to be measured |
 | project file | `default.project.json` | none |
 | maturity | years of use | maintained by one person, recent |
 

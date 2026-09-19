@@ -19,11 +19,11 @@ Using it in VS Code:
 `CTRL + SHIT + P`, then `Tasks: Run Task`, then `rojo`
 :::
 
-## The watch dies when you delete a folder {#crash}
+## The watch dies when a folder is unlinked {#crash}
 
 ::: danger Measured on Rojo 7.7.0
-Deleting a folder that `rojo sourcemap --watch` is watching **takes the
-process down**:
+A watched folder that disappears **by unlink** — without going through the
+recycle bin — **takes the `rojo sourcemap --watch` process down**:
 
 ```
 [ERROR rojo] Rojo crashed! You are running Rojo 7.7.0.
@@ -42,21 +42,28 @@ and going back to normal only after running `./tools/analyze.ps1`, which
 generates a one-shot sourcemap. The one-shot is born correct; what's broken is
 the process that was left watching.
 
-Isolating gesture by gesture, only one kills it:
+The line isn't "deleting". It's **whether the folder was moved or unlinked**.
+The Windows recycle bin is a move, and that's what separates the two sides:
 
-| gesture | does the watch survive? |
-|---|---|
-| creating a module folder | yes |
-| editing a file | yes |
-| deleting a **file** | yes, but the entry stays in the map |
-| **deleting a folder** | **no, the process dies** |
-| renaming a folder | yes |
-| moving a module from server to client | yes |
+| gesture | what it is on Windows | does the watch survive? |
+|---|---|---|
+| <kbd>Delete</kbd> in the VS Code explorer | move to the recycle bin | **yes**, and it cleans the map |
+| <kbd>Delete</kbd> in Windows Explorer | move to the recycle bin | **yes**, and it cleans the map |
+| renaming the folder | move | **yes**, and it follows |
+| <kbd>Shift</kbd>+<kbd>Delete</kbd> | unlink | **no, the process dies** |
+| `rm -rf`, a script, a tool | unlink | **no, the process dies** |
 
-Renaming survives because on Windows it's an atomic operation and doesn't
-produce the `canonicalize` of a path that vanished. Deleting a folder is what
-the <kbd>Delete</kbd> key does in the VS Code explorer, so it's a common
-gesture.
+Measured gesture by gesture, with the watcher running and a human doing the
+deleting.
+
+This matters in practice: if you delete folders with the plain
+<kbd>Delete</kbd> key, you will probably never hit this bug. Who hits it is
+whoever uses <kbd>Shift</kbd>+<kbd>Delete</kbd>, or a tool that deletes
+outright — which includes things like `wally install`, which rewrites
+`Packages/` from scratch.
+
+When it dies, the entry stays in the sourcemap: it doesn't even get to clean
+up.
 
 ::: tip What Modux does about it
 From **0.6.8** on, `modux watch --nudge` rebuilds the whole sourcemap whenever
@@ -78,7 +85,7 @@ Measured, same gesture on both:
 
 ::: warning If you close `modux watch`
 The protection goes with it. With only luau-lsp keeping the sourcemap, the map
-freezes again on the first folder `rm`. The real fix is in Rojo, in the
+freezes again on the first folder unlink. The real fix is in Rojo, in the
 `unwrap()` at `change_processor.rs:179`.
 
 One alternative is [Azul](/en/setup/Azul), which doesn't have this problem:

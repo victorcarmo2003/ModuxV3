@@ -19,10 +19,11 @@ uso no vscode:
 `CTRL + SHIT + P` e `Tasks: Run Task` e por fim `rojo`
 :::
 
-## O watch morre ao apagar uma pasta {#crash}
+## O watch morre quando uma pasta é desvinculada {#crash}
 
 ::: danger Medido no Rojo 7.7.0
-Apagar uma pasta que o `rojo sourcemap --watch` observa **derruba o processo**:
+Uma pasta observada que some **por unlink** — sem passar pela lixeira —
+**derruba o processo** do `rojo sourcemap --watch`:
 
 ```
 [ERROR rojo] Rojo crashed! You are running Rojo 7.7.0.
@@ -41,20 +42,25 @@ aparente, e voltando ao normal só depois de rodar `./tools/analyze.ps1`, que
 gera um sourcemap avulso. O avulso nasce correto; quem está quebrado é o
 processo que ficou vigiando.
 
-Isolando gesto por gesto, só um mata:
+A fronteira não é "apagar". É **se a pasta foi movida ou desvinculada**. A
+lixeira do Windows é um move, e é isso que separa os dois lados:
 
-| gesto | o watch sobrevive? |
-|---|---|
-| criar pasta de módulo | sim |
-| editar um arquivo | sim |
-| apagar um **arquivo** | sim, mas a entrada fica no mapa |
-| **apagar uma pasta** | **não, o processo morre** |
-| renomear uma pasta | sim |
-| mover módulo de server para client | sim |
+| gesto | o que é no Windows | o watch sobrevive? |
+|---|---|---|
+| <kbd>Delete</kbd> no explorer do VS Code | move para a lixeira | **sim**, e limpa o mapa |
+| <kbd>Delete</kbd> no Explorer do Windows | move para a lixeira | **sim**, e limpa o mapa |
+| renomear a pasta | move | **sim**, e acompanha |
+| <kbd>Shift</kbd>+<kbd>Delete</kbd> | unlink | **não, o processo morre** |
+| `rm -rf`, script, ferramenta | unlink | **não, o processo morre** |
 
-Renomear sobrevive porque no Windows é uma operação atômica e não gera o
-`canonicalize` de um caminho que sumiu. Apagar pasta é o que a tecla
-<kbd>Delete</kbd> faz no explorer do VS Code, então é um gesto comum.
+Medido gesto a gesto, com o watcher observando e o usuário apagando à mão.
+
+Isso importa na prática: se você apaga pastas pelo <kbd>Delete</kbd> normal,
+provavelmente nunca vai encontrar esse bug. Quem encontra é quem usa
+<kbd>Shift</kbd>+<kbd>Delete</kbd>, ou uma ferramenta que apaga direto — e aí
+entram coisas como `wally install`, que reescreve `Packages/` do zero.
+
+Quando ele morre, a entrada fica no sourcemap: ele nem chega a limpar.
 
 ::: tip O que o Modux faz a respeito
 A partir da **0.6.8**, o `modux watch --nudge` refaz o sourcemap inteiro
@@ -76,7 +82,7 @@ Medido, mesmo gesto nos dois:
 
 ::: warning Se você fechar o `modux watch`
 A proteção vai junto. Com só o luau-lsp mantendo o sourcemap, o mapa volta a
-congelar no primeiro `rm` de pasta. O conserto definitivo é no Rojo, no
+congelar no primeiro unlink de pasta. O conserto definitivo é no Rojo, no
 `unwrap()` de `change_processor.rs:179`.
 
 Uma alternativa é o [Azul](/setup/Azul), que não tem esse problema: apagar
