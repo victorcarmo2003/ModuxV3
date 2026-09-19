@@ -19,7 +19,7 @@ Em seguida abrir o arquivo rokit.toml, colar:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/modux@0.6.7"
+modux = "victorcarmo2003/modux@0.6.8"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 E por fim executar, se for necessário, atualizar o rokit e instalar:
