@@ -1,50 +1,90 @@
-# Modux
+<h1 align="center">Modux</h1>
 
-Framework de módulos para Roblox em que o `self` já vem tipado, sem você anotar
-nada.
+<p align="center">Framework com tipagem automática para Roblox que potencializa os seus types e te incentiva a manter sempre boas práticas.
+
+---
+
+<h3 align="center">
+    Documentação: <a href="https://victorcarmo2003.github.io/ModuxV3/">Modux</a>
+</h3>
+
+
+---
+
+Modux é um framework de módulos para Roblox cujo objetivo é trazer mais poder à sua tipagem e que também retorna alertas/erros fazendo com que você não tenha que ficar executando constantemente os seus códigos para achar erros.
+
+Como por exemplo, se inserirmos o self com algum valor básico, ele vem com um type autogerado:
+
 
 ```lua
 --!strict
-const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton" } })
+const Zombie = Modux.Controller("Zombie")
 
-function Zombie:Heal(amount: number, target: Instance)
-	self.Dependencies.Skeleton:ShotArrow()    -- tipado
-	self.Components.Highlight:Create(target)  -- tipado
-	self.Libs.Signal.new()                    -- tipado
+function Zombie:Heal(amount: number)
+	self.Health = amount
 end
-```
 
-Você não escreveu nenhum tipo. `Skeleton` sabe quais métodos tem, `Highlight`
-devolve o componente certo, e trocar `"Skeleton"` por um nome que não existe
-quebra a análise antes de rodar.
+Zombie.Health --> number
+```
 
 O truque: um gerador lê os teus módulos e escreve uma folha de tipo por módulo.
 O framework junta essas folhas com type functions do Luau. Você escreve Luau
 normal; o tipo aparece.
 
----
-
 ## Por que não só escrever na mão
 
-Porque a alternativa é declarar a mesma superfície duas vezes e mantê-la em
-sincronia para sempre. A abordagem anterior deste projeto expandia o `self`
-inteiro em cada arquivo, e o autocomplete ficava **4 a 6× mais lento** que hoje
-— o custo de manutenção virava custo de digitação.
+Bom se a tipagem automático, bootstrap tipado, requires "ciclicos" resolvidos com DI (Dependency Injection) 
+tipados ainda não te convenceu, apenas pense no trabalho que seria escrever métodos, parâmetros valores do self 
+tudo à mão, o tempo inteiro, condizentes com os valores e métodos em tempo real.
 
-Números medidos neste repositório, não estimados:
+Esse é o motivo que fazem muitos desistirem de tipagem em luau e com isso essa ferramenta se torna perfeita para todos.
 
-| | |
-|---|---|
-| autocomplete, 18 módulos | 18 ms depois de cada tecla |
-| overhead do framework por componente, por frame | 0,21 µs |
-| 1000 componentes com `OnTick` a cada frame | 1,3% do orçamento de 60 fps |
-| atravessar `self.Dependencies.X` numa chamada | +8,8 ns, ~0 se içar para um local |
-| trabalho próprio do Modux no boot | 0,36 ms (o `require` dos módulos é ~88%) |
+## Economia de tempo
+Além do strict e o apoio de typefunctions, o modux possui generic types para controllers criados além de uma tool que converte as próprias funções, parâmetros de funcões e valores simples no self para tipagem em um arquivo de Types.luau que é gerado dentro do module
 
-O framework não é o gargalo em nada que deu para medir. O que pesa é o corpo
-que **você** escreve.
+Então por exemplo ao escrever um nome como string ou uma idade como number no self, ele vem tipado em qualquer outro lugar que utilize o self:
 
----
+```lua
+const Zombie = Modux.Controller("Zombie")
+
+function Zombie:Heal(amount: number)
+	self.Name = "Joaquim"
+	self.Age = 197
+end
+
+function Zombie:Teste()
+	self.Joaquim --> string
+	self.Age --> number | singleton de number 197
+    self:Heal("Abc") --> Type Error: Expected number, got string
+end
+```
+
+## Require
+O mesmo vale também para os requires inseridos no head, como por exemplo ao fazer: Require = { "Skeleton" } 
+ele tipa dentro de dependencias o module Skeleton e atribui as funções com autocomplete incluindo os parâmetros:
+```lua
+--!strict
+const Skeleton = Modux.Controller("Skeleton")
+
+function Skeleton:ShootArrow(Target: Instance)
+end
+```
+E em outro controller utilizando ele:
+```lua
+--!strict
+const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton" } })
+
+function Zombie:Heal(amount: number, target: Instance)
+	self.Dependencies.Skeleton:ShotArrow(target) -- 100% tipado
+end
+```
+
+O modux também funciona 100% com dependências mútuas ou seja, Zombie pode requerir skeleton e skeleton pode requerir Zombie
+
+A vantagem maior vantagem é, você não escreveu nenhum tipo. Dentro de Dependencies > Skeleton ele mostra para você exatamente 
+quais métodos tem e quais parâmetros precisa. Caso tente requerir algo que não existe, ele também acusa erro!
+
+O truque: um gerador lê os seus módulos e escreve uma folha de tipo por módulo. O framework junta essas folhas com type functions do Luau.
 
 ## Modelos
 
@@ -54,42 +94,60 @@ que **você** escreve.
 | **Service** | server | um por jogo | outros Services |
 | **Component** | os dois | um por `Instance` tagueada | Controllers no client, Services no server |
 
-Lado não atravessa, e não é convenção: um Controller que declara `Require` de um
-Service **interrompe a geração**, com uma mensagem dizendo quem está de que lado.
+Não há como misturar Controllers e Services, e não é convenção: um Controller que declara `Require` de um
+Service **interrompe a geração de tipagem**, com uma mensagem dizendo quem está de que lado.
 Comunicação entre lados é rede, e rede é explícita.
 
+No modux:
+Controllers vivem no Client-side
+Services vivem no Server-side
+Componentes existem para o client-side e para o server-side, porém não interagem cross-side
+
+## Componentes
 Componente é ligado a `Instance` via CollectionService. Sem `Tag` declarada, a
 tag é o próprio ID.
 
 ```lua
-const Highlight = Modux.Component("Highlight", { Require = { "Render" } })
+local ServerScriptService = game:GetService("ServerScriptService")
+local Modux = require(ServerScriptService.server.Modux)
 
-function Highlight:TurnOn()
-	self.Instance.Color = Color3.new(1, 1, 0)   -- Instance sempre existe
-end
+const Highlight = Modux.Component("Highlight")
 
-Highlight:OnDestroy(function(self)
-	self:Destroy()      -- ou de fora: self.Components.Highlight:Destroy(inst)
+Highlight:OnInit(function(self)
+	local new = Instance.new("Highlight")
+	new.Parent = self.Instance
+	task.delay(5, function()
+		self.Instance:Destroy()
+	end)
 end)
+
+return Highlight
 ```
+Esse script por exemplo faz com que, o que tiver a tag "Highlight" receba um Highlight
+E seja destruído após 5 segundos. Isso funciona tanto para quando a instância já começar
+o game com aquela tag quanto para com a tag sendo adicionada ao longo do game.
 
 ## Ciclo de vida
 
-`OnInit` → `OnStart` → `OnTick` → `OnDestroy` (só componente).
+`OnInit` → `OnStart` → `OnTick` → `OnDestroy (componentes apenas)`.
 
-A injeção acontece **antes** de qualquer `OnInit`, o que faz dependência mútua
-A↔B funcionar: quando o teu código roda, tudo já existe.
+A injeção acontece antes de qualquer OnInit, o que faz dependência mútua A↔B funcionar: quando o teu código roda, tudo já existe.
+
+O loader completa todos os OnInit antes de começar qualquer OnStart, e ordena as duas fases por Priority decrescente. 
+Isso é o que permite dizer "registre no OnInit, dispare no OnStart" e ter certeza da ordem.
 
 ```lua
 X:OnTick(callback, tickRate, priority)   -- sem os dois: 1 Hz, priority 1
 ```
 
-`priority` maior roda primeiro, e o empate desempata pela ordem de registro —
-determinístico, não muda quando outro módulo entra.
+O TickRate e o Priority são opcionais, o default é 1hz e prioridade 1,
+priority maior roda primeiro, e o empate desempata pela ordem de registro — determinístico, não muda quando outro módulo entra.
+O priority do tick é independente do Priority do módulo.
 
 Componente tagueado pelo Studio sobe depois que todos os singletons startaram.
 `Create` é o oposto: constrói e devolve **na mesma linha**, porque `AddTag` só
-avisa no próximo frame e esperar isso é gambiarra.
+avisa no próximo frame por isso ao invés de fazer CollectionService:AddTag() e depois tentar puxar
+a instância, deve-se na verdade utilizar o método CreateComponent() que então te retorna aquele componente.
 
 ## Configuração
 
