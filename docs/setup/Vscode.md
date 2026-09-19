@@ -73,22 +73,53 @@ Manter os dois não quebra nada, mas é trabalho duplicado — se você usa a ta
 
 ## tasks.json
 
-Três watchers e uma tarefa `dev` que sobe os três em paralelo:
+Dois conjuntos, um por forma de sincronizar. Você roda **um ou outro**, nunca
+os dois ao mesmo tempo — os dois disputariam o mesmo `sourcemap.json`.
+
+### `rojo` — o disco manda
+
+É o fluxo padrão, e a tarefa de build, então `CTRL + SHIFT + B` sobe ela.
 
 | tarefa | |
 |---|---|
 | `rogen watch` | regera o project file quando pasta muda |
-| `modux watch --fix` | regera folhas e Manifest; move módulo novo para a própria pasta |
+| `modux watch --fix --nudge` | regera folhas e Manifest; move módulo novo para a própria pasta |
 | `rojo serve` | serve para o Studio |
 
 ```json
 {
-	"label": "dev",
+	"label": "rojo",
 	"dependsOn": ["rogen watch", "modux watch", "rojo serve"],
 	"dependsOrder": "parallel",
 	"group": { "kind": "build", "isDefault": true }
 }
 ```
+
+### `azul` — o Studio manda
+
+Para quando você usa o [Azul](/setup/Azul), inclusive para editar a dois.
+
+| tarefa | |
+|---|---|
+| `azul sync` | o daemon, que espera o plugin do Studio conectar |
+| `modux watch --sourcemap` | lê o mapa do sourcemap do Azul, em vez do project file |
+
+```json
+{
+	"label": "azul",
+	"dependsOn": ["azul sync", "modux watch (sourcemap)"],
+	"dependsOrder": "parallel",
+	"group": "build"
+}
+```
+
+Não há `rogen` nem `rojo serve` aqui: o Azul é o transporte e o sourcemap é
+dele. A flag `--sourcemap` é o que impede o modux de reconstruir o mapa por
+cima — ver [Azul](/setup/Azul#o-modux-com-o-azul).
+
+::: tip A tarefa `dev` continua existindo
+Ela virou apelido de `rojo`, para não quebrar quem já tem o hábito.
+:::
 
 ::: danger Não acrescente uma tarefa de sourcemap
 `luau-lsp.sourcemap.autogenerate` já faz o servidor subir o **seu próprio**
@@ -105,9 +136,9 @@ Server**.
 :::
 
 ::: tip Dica
-`CTRL + SHIFT + P` e `Tasks: Run Task` e por fim `dev`
+`CTRL + SHIFT + P` e `Tasks: Run Task` e por fim `rojo` ou `azul`
 
-Como é a tarefa de build padrão, `CTRL + SHIFT + B` também sobe ela direto.
+Como `rojo` é a tarefa de build padrão, `CTRL + SHIFT + B` sobe ela direto.
 :::
 
 ::: warning Watcher segura a versão antiga
@@ -116,7 +147,7 @@ watcher que continua rodando ainda usa a versão antiga e vai **reescrever** os
 arquivos gerados com o comportamento antigo, em silêncio, por cima do que você
 acabou de gerar.
 
-Reinicie a tarefa `dev` depois de atualizar qualquer ferramenta.
+Reinicie a tarefa (`rojo` ou `azul`) depois de atualizar qualquer ferramenta.
 :::
 
 ## .luaurc

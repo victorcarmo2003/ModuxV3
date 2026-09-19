@@ -75,22 +75,55 @@ task, you can leave `autogenerate` at `false`.
 
 ## tasks.json
 
-Three watchers and a `dev` task that brings all three up in parallel:
+Two sets, one per way of syncing. You run **one or the other**, never both at
+once — they would fight over the same `sourcemap.json`.
+
+### `rojo` — the filesystem is in charge
+
+This is the default flow, and the build task, so `CTRL + SHIFT + B` brings it
+up.
 
 | task | |
 |---|---|
 | `rogen watch` | regenerates the project file when a folder changes |
-| `modux watch --fix` | regenerates leaves and Manifest; moves a new module into its own folder |
+| `modux watch --fix --nudge` | regenerates leaves and Manifest; moves a new module into its own folder |
 | `rojo serve` | serves to Studio |
 
 ```json
 {
-	"label": "dev",
+	"label": "rojo",
 	"dependsOn": ["rogen watch", "modux watch", "rojo serve"],
 	"dependsOrder": "parallel",
 	"group": { "kind": "build", "isDefault": true }
 }
 ```
+
+### `azul` — Studio is in charge
+
+For when you use [Azul](/en/setup/Azul), including editing as a pair.
+
+| task | |
+|---|---|
+| `azul sync` | the daemon, waiting for the Studio plugin to connect |
+| `modux watch --sourcemap` | reads the map from Azul's sourcemap instead of the project file |
+
+```json
+{
+	"label": "azul",
+	"dependsOn": ["azul sync", "modux watch (sourcemap)"],
+	"dependsOrder": "parallel",
+	"group": "build"
+}
+```
+
+There's no `rogen` and no `rojo serve` here: Azul is the transport and the
+sourcemap is its own. The `--sourcemap` flag is what stops modux from
+rebuilding the map over it — see
+[Azul](/en/setup/Azul#modux-with-azul).
+
+::: tip The `dev` task still exists
+It became an alias for `rojo`, so nobody's muscle memory breaks.
+:::
 
 ::: danger Don't add a sourcemap task
 `luau-lsp.sourcemap.autogenerate` already has the server bringing up **its own**
@@ -107,9 +140,10 @@ Server**.
 :::
 
 ::: tip Tip
-`CTRL + SHIFT + P`, then `Tasks: Run Task`, then `dev`
+`CTRL + SHIFT + P`, then `Tasks: Run Task`, then `rojo` or `azul`
 
-Since it's the default build task, `CTRL + SHIFT + B` brings it up directly too.
+Since `rojo` is the default build task, `CTRL + SHIFT + B` brings it up
+directly.
 :::
 
 ::: warning A watcher holds on to the old version
@@ -117,7 +151,7 @@ The process loads the binary the moment it comes up. After a `rokit update`, a
 watcher still running is still on the old version and will **rewrite** the
 generated files with the old behaviour, silently, over what you just generated.
 
-Restart the `dev` task after updating any tool.
+Restart the task (`rojo` or `azul`) after updating any tool.
 :::
 
 ## .luaurc
