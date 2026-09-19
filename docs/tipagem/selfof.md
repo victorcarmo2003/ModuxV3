@@ -92,4 +92,4 @@ print(x.Novo)
 
 Se `Build<` aparecer **literal** no texto do erro, não reduziu.
 
-Ver [Como a tipagem funciona](/tipos/#as-quatro-regras-duras).
+Ver [Como a tipagem funciona](/tipagem/#as-quatro-regras-duras).

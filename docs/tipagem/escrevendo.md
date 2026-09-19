@@ -108,7 +108,7 @@ análise abortada por timeout, e o Studio passa a mostrar **tudo** como `any`.
 
 Todo walker recursivo nasce com uma tabela `visitados`, e o registro acontece
 **antes** de descer, não depois. Ou com um limite de profundidade, como o
-[`Merge`](/tipos/struct#merge) faz com 8.
+[`Merge`](/tipagem/struct#merge) faz com 8.
 
 Se o editor começou a mostrar tudo como `any` logo depois de você mexer numa
 type function, procure recursão sem caso base antes de qualquer outra coisa.
@@ -163,7 +163,7 @@ quase sempre a resposta — e a causa costuma ser a falha nº 2.
 
 ## Um exemplo completo
 
-Este está pronto no repositório, como [`Atomic`](/tipos/atomic). Derivar `{ Coins: number }` em campos reativos, onde cada um lê chamado sem
+Este está pronto no repositório, como [`Atomic`](/tipagem/atomic). Derivar `{ Coins: number }` em campos reativos, onde cada um lê chamado sem
 argumento e escreve chamado com um:
 
 ```lua

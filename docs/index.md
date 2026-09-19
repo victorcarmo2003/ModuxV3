@@ -3,18 +3,18 @@ layout: home
 
 hero:
   name: Modux
-  text: O self já vem tipado
-  tagline: Framework de módulos para Roblox onde você escreve Luau normal e o tipo aparece sozinho.
+  text: Auto-Typed
+  tagline: Framework com tipagem automática para Roblox que potencializa os seus types e te incentiva a manter sempre boas práticas.
   actions:
     - theme: brand
       text: Guia
       link: /guia/introducao
     - theme: alt
-      text: Tipos
-      link: /tipos/
+      text: Tipagem
+      link: /tipagem/
     - theme: alt
-      text: Ferramentas
-      link: /ferramentas
+      text: Setup
+      link: /setup/
 
 features:
   - title: Sem anotar nada

@@ -20,7 +20,7 @@ self.Dependencies.Inventory:Add(item)
 -- Key 'Inventory' not found in table '{ read Skeleton: ..., read Camera: ... }'
 ```
 
-Isso sai de [`Pick.Table`](/tipos/pick), que recorta o Manifest do lado pelas
+Isso sai de [`Pick.Table`](/tipagem/pick), que recorta o Manifest do lado pelas
 chaves declaradas.
 
 ## Injeção antes do OnInit

@@ -13,7 +13,7 @@ export type function Keys(t: type, k: type)
 **Detalhes**
 
 `k` aceita um singleton ou uma união de singletons. Campo que não existe é
-ignorado em silêncio — diferente de [`Rename`](/tipos/struct#rename), que erra.
+ignorado em silêncio — diferente de [`Rename`](/tipagem/struct#rename), que erra.
 
 **Exemplo**
 
@@ -39,5 +39,5 @@ type Publico = Occlude.Keys<typeof(Servico), "_cache" | "_conexoes">
 ::: tip
 Se o critério for uma convenção de nome e não uma lista fixa — "tudo que
 começa com `_`" — vale escrever uma type function própria que filtre por
-prefixo. Ver [Escrevendo a sua](/tipos/escrevendo).
+prefixo. Ver [Escrevendo a sua](/tipagem/escrevendo).
 :::

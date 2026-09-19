@@ -38,7 +38,7 @@ A folha não conhece o Manifest, e o Manifest não conhece o core. É essa dire�
 
 ### 3. Type functions montam o `self`
 
-O tipo do `self` sai de [`SelfOf.Build`](/tipos/selfof), que combina a folha do
+O tipo do `self` sai de [`SelfOf.Build`](/tipagem/selfof), que combina a folha do
 próprio módulo com o que o framework injeta:
 
 ```lua
@@ -52,7 +52,7 @@ export type ServiceSelf<ID, P> = SelfOf.Build<
 >
 ```
 
-`index<AllServices, ID>` pega a folha pelo ID. [`Pick.Table`](/tipos/pick)
+`index<AllServices, ID>` pega a folha pelo ID. [`Pick.Table`](/tipagem/pick)
 recorta o Manifest pelas chaves declaradas em `Require`. O resultado é um
 `self` que sabe exatamente o que aquele módulo tem e alcança.
 
@@ -64,17 +64,17 @@ Duas pastas, com propósitos diferentes.
 
 | | |
 |---|---|
-| [`SelfOf`](/tipos/selfof) | monta o `self` a partir da folha mais os extras |
-| [`Pick`](/tipos/pick) | recorta o Manifest pelas chaves declaradas |
+| [`SelfOf`](/tipagem/selfof) | monta o `self` a partir da folha mais os extras |
+| [`Pick`](/tipagem/pick) | recorta o Manifest pelas chaves declaradas |
 
 **`src/Shared/Types/`** — utilitários para você usar no seu código.
 
 | | |
 |---|---|
-| [`Struct`](/tipos/struct) | `Partial`, `Required`, `Readonly`, `Mutable`, `Assign`, `Merge`, `Record`, `Rename`, `DeepPartial`, `DeepReadonly` |
-| [`Union`](/tipos/union) | `Exclude`, `Extract`, `NonNullable`, `KeyList`, `ValueList`, `Entries` |
-| [`Occlude`](/tipos/occlude) | `Keys` — remove campos por nome |
-| [`Atomic`](/tipos/atomic) | `Of`, `Table` — cada campo vira um par getter/setter |
+| [`Struct`](/tipagem/struct) | `Partial`, `Required`, `Readonly`, `Mutable`, `Assign`, `Merge`, `Record`, `Rename`, `DeepPartial`, `DeepReadonly` |
+| [`Union`](/tipagem/union) | `Exclude`, `Extract`, `NonNullable`, `KeyList`, `ValueList`, `Entries` |
+| [`Occlude`](/tipagem/occlude) | `Keys` — remove campos por nome |
+| [`Atomic`](/tipagem/atomic) | `Of`, `Table` — cada campo vira um par getter/setter |
 
 Nada em `src/Shared/Types/` é requerido pelo framework. Apagar não quebra nada
 além de quem usava.
@@ -127,7 +127,7 @@ Medido:
 
 A regra não é "genérico quebra". É **aplicação de type function não resolvida**
 alcançável a partir dos extras. É por isso que [nem toda lib pode entrar em
-`self.Libs`](/guia/libs#limite).
+`self.Libs`](/arquitetura/libs#limite).
 
 ### `types` só existe dentro do corpo
 
@@ -138,4 +138,4 @@ Consequência prática: type functions **não se enxergam**. Uma não pode chama
 outra.
 
 Detalhes e o catálogo de falhas silenciosas estão em
-[Escrevendo a sua](/tipos/escrevendo).
+[Escrevendo a sua](/tipagem/escrevendo).
