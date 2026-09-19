@@ -3,6 +3,7 @@
     "luau-lsp.studioPlugin.enabled": true,
     "luau-lsp.sourcemap.enabled": true,
     "luau-lsp.sourcemap.autogenerate": true,
+    "luau-lsp.sourcemap.useVSCodeWatcher": true,
     "luau-lsp.studioPlugin.port": 3668,
     "luau-lsp.sourcemap.sourcemapFile": "sourcemap.json",
     "luau-lsp.fflags.enableNewSolver": true,
@@ -14,7 +15,6 @@
     "[luau]": {
         "editor.defaultFormatter": "JohnnyMorganz.stylua"
     },
-    "modux.studioBridge.port": 9001,
     "editor.formatOnSave": true,
     "syncteam.port": 1550,
     "discord.enabled": true,
