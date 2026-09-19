@@ -13,8 +13,9 @@ A lib não precisa aderir a contrato nenhum — o tipo sai de
 nenhum dos dois precisou mudar para entrar.
 
 Apagar uma lib da pasta não quebra o framework: a entrada some do tipo e quem
-usava falha no lugar certo. É o que torna o Modux publicável sem arrastar
-biblioteca de terceiro junto.
+usava falha no lugar certo. É o basicamente desprende o Modux de libs fixas,
+diferente da primeira versão aonde eu coloquei o Lync como interno dele (e logo
+depois o dono lançou uma versão melhor 🫠).
 
 ## O que entra
 
@@ -31,6 +32,10 @@ Pasta com `init.luau` ou arquivo `.luau` solto, os dois valem.
 Projeto sem `src/Libs` gera `Api = {}` e `self.Libs` fica vazio, sem quebrar.
 
 ## Nem toda lib pode entrar {#limite}
+
+Essa parta a IA explica melhor do que eu mesmo, mas para resumir algumas libs eu não
+consegui injetar em `self.Libs` por conta do typefunction delas, que acabava bagunçando
+muita coisa, então em alguns casos, o ideal é apenas usar o require direto mesmo
 
 ::: danger O sintoma não aponta para a causa
 Uma lib cujo tipo contenha **type function não reduzida** impede o

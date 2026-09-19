@@ -1,7 +1,8 @@
 # Componentes
+Componentes são unilaterais para server e para client.
 
-Componente é ligado a uma `Instance` via CollectionService, e existe um por
-instância tagueada. Sem `Tag` declarada, a tag é o próprio ID.
+O Componente é ligado a uma `Instance` via CollectionService, e existe um por
+instância tagueada. Sem `Tag` declarada, a tag é o próprio ID.1
 
 ```lua
 const Highlight = Modux.Component("Highlight", { Require = { "Render" } })
@@ -56,5 +57,5 @@ não ressuscita um objeto já morto.
 ## Rede, em componente
 
 Componente **não** deve registrar responder de rede. Ele sobe depois do start
-da lib de rede, e um responder costuma ser único por definição — um por
-instância seria errado de qualquer forma. Disparar e ler, à vontade.
+da lib de rede, e um responder costuma ser único por definição, um por
+instância seria errado de qualquer forma. É apenas convenção.

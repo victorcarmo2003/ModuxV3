@@ -1,7 +1,7 @@
 # VS Code
+Se você puxou pelo template, essas etapas já estão configuradas!
 
-Quatro arquivos, todos já prontos no template. Se você montou o projeto à mão,
-são estes que faltam.
+São apenas 4 arquivos, se você montou o projeto à mão, são estes que faltam.
 
 <FileTree title="configuracao do editor" :paths="[
   '.vscode/extensions.json # extensoes recomendadas',

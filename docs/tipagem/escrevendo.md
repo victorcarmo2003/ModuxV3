@@ -18,10 +18,16 @@ Type function paga em dois casos:
 - o tipo precisa **acompanhar** outro e nunca sair de sincronia
 - você precisa **reprovar** por um critério que a linguagem não expressa
 
+:::tip Informação
+Para a maioria das coisas os built-ins já resolvem o seu problema, keyof
+com intersection e tipagem genérica já cobre a mairoria das coisas, inclusive
+é o que eu uso para converter os strings para singleton de dentro das tabelas
+:::
+
 ## O esqueleto
 
 ```lua
-export type function Nome(t: type, k: type)   -- SEMPRE anote `: type`
+export type function Nome(t: type, k: type)   -- SEMPRE TIPE ISSO!!!
 	if t:is("any") or t:is("unknown") or t:is("never") then
 		return types.any
 	end
@@ -54,6 +60,10 @@ no editor: a análise em linha de comando passa, o autocomplete não funciona, e
 nada avisa.
 
 Toda função daqui termina com `type _anchorX = X<...>`. Não são exemplos.
+
+:::tip Informação
+Ou talvez seja, como as vezes ele não reconhece o type, melhor só colocar mesmo🫠
+:::
 
 ## O catálogo de falhas silenciosas
 
@@ -103,21 +113,28 @@ Se parar de errar, faltou o `types.copy`.
 
 ## Loop infinito aborta a análise
 
-A implementação não detecta loop infinito. Type function que não termina =
-análise abortada por timeout, e o Studio passa a mostrar **tudo** como `any`.
+Um problema chato nos typefunctions é não detecta sempre os loops infinitos.
+Então meio que Type function que não termina = análise abortada por timeout, 
+e o lsp passa acusar `Type is too complex` ou passa a mostrar tudo como `any`.
 
 Todo walker recursivo nasce com uma tabela `visitados`, e o registro acontece
 **antes** de descer, não depois. Ou com um limite de profundidade, como o
 [`Merge`](/tipagem/struct#merge) faz com 8.
 
-Se o editor começou a mostrar tudo como `any` logo depois de você mexer numa
-type function, procure recursão sem caso base antes de qualquer outra coisa.
+Se o editor começou a mostrar tudo como `any` ou gerou `Type is too Complex` 
+logo depois de você mexer numa type function, procure recursão ou loops dentro
+que não fazem sentido antes de ver qualquer outra coisa.
 
 ## Ordem não é garantida
 
 `properties()` não garante ordem. Qualquer coisa posicional — montar uma
 interseção de overloads, derivar ordem de argumentos — precisa de `table.sort`
 explícito, senão o bug só aparece quando a tabela cresce.
+
+:::tip Informação
+Inclusive você vai perceber que todas as tabelas sempre retornam o valor
+de trás para frente, não sei o motivo, mas é assim que a vida é.
+:::
 
 ## Limites do sandbox
 
@@ -131,11 +148,11 @@ Três consequências:
 - **Não existe higher-order.** Você não passa uma type function como argumento
   de outra. O contorno é despachar por singleton de string.
 - **Não existe singleton numérico.** Para devolver número, use
-  `types.singleton(tostring(n))`.
+  `types.singleton(tostring(n))` caso contrário você perde ele.
 
 ## Sondando
 
-O truque mais útil: `error()` como breakpoint.
+O truque mais útil: `error()` como print, sim, PARA PRINTAR.
 
 ```lua
 error(`cheguei com {chave:value()}`)
@@ -145,7 +162,7 @@ O primeiro `error` aborta tudo, então para ver uma lista inteira, acumule num
 array e erre uma vez só no fim. O lint `UnreachableCode` depois disso é
 esperado.
 
-Para saber o que um tipo realmente tem, uma função que erra de propósito:
+Para saber o que um tipo realmente tem, só montar uma função que erra de propósito:
 
 ```lua
 export type function Show(t: type)
@@ -159,7 +176,7 @@ end
 ```
 
 Quando uma type function devolve algo idêntico ao que entrou, `props=[]` é
-quase sempre a resposta — e a causa costuma ser a falha nº 2.
+quase sempre a resposta — e a causa costuma ser a falha nº2.
 
 ## Um exemplo completo
 

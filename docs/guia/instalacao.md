@@ -52,9 +52,12 @@ rokit install          # baixa as ferramentas fixadas no rokit.toml
 ./tools/packages.ps1   # dependencias do Wally, e a tipagem delas
 modux generate         # folhas de tipo e Manifest
 ```
+### Manualmente
+Para montar tudo à mão, sem o template do github, pode-se acompanhar
+as etapas em: [Setup](/setup/).
 
 ## Para desenvolver
-
+### Atalho
 Não precisa rodar mais nada à mão. Dentro do VS Code:
 
 <div class="shortcut">
@@ -88,17 +91,16 @@ Detalhe de cada tarefa em [VS Code](/setup/Vscode).
 
 E pronto! Você já pode começar.
 
+### Aviso
 ::: warning Novos pacotes
-Ao inserir novos pacotes no wally, sempre execute:
+Ao inserir novos pacotes no wally e instalar, logo após, sempre execute:
 
 `wally-package-types --sourcemap sourcemap.json Packages/ ServerPackages/ DevPackages/`
 
 Confira mais informações na aba [Wally](/setup/Wally)
 :::
 
-Montar tudo à mão, sem o template, está em [Setup](/setup/).
-
-## O que vem no template
+## Conteúdo
 
 <FileTree title="modux template" :paths="[
   'src/Modux/ # o framework',
@@ -113,7 +115,7 @@ Montar tudo à mão, sem o template, está em [Setup](/setup/).
   'src/Interface/ # componentes Vide e stories do UI Labs',
 ]" />
 
-## Só o framework, num projeto que já existe
+## Framework
 
 A branch `framework` tem exatamente o conteúdo de `src/Modux` na raiz, então dá
 para puxá-la para dentro de um projeto seu:
@@ -128,7 +130,8 @@ O primeiro comando depois do clone é `modux generate`. Sem ele o Manifest ainda
 Assim você recebe só o framework — as ferramentas, as dependências e os
 utilitários de tipo ficam por sua conta. Ver [Setup](/setup/).
 
-## `LuauSolverV2` é obrigatório
+## Avisos
+### `LuauSolverV2`
 
 Type function não existe no solver antigo. Sem a flag, `self` fica sem tipo e o
 autocomplete devolve **zero item** — sem erro, sem aviso, só nada.
@@ -139,7 +142,7 @@ autocomplete devolve **zero item** — sem erro, sem aviso, só nada.
 }
 ```
 
-::: warning
+::: warning AVISO:
 Esse é o erro mais caro de diagnosticar do framework inteiro, porque não produz
 mensagem nenhuma. Se o autocomplete está vazio, confira a flag antes de
 qualquer outra coisa.
@@ -148,7 +151,7 @@ qualquer outra coisa.
 O template já traz isso e o resto do `.vscode` pronto — ver
 [VS Code](/setup/Vscode).
 
-## Onde os seus módulos entram
+### Onde os seus módulos entram
 
 Em qualquer pasta sob `src/`, e o lado sai do caminho: pasta `client` vai para
 StarterPlayerScripts, `server` para ServerScriptService, e o resto é shared.

@@ -66,9 +66,11 @@ export type ProfileStore<T> = REQUIRED_MODULE.ProfileStore<T>
 export type ProfileStoreModule = REQUIRED_MODULE.ProfileStoreModule 
 return REQUIRED_MODULE
 ```
+E com isso o parser irá conseguir puxar essa tipagem para o seu uso, além de expor ela
+para caso você mesmo precise fazer algum cast e receber os valores corretos!
 
+::: warning wally-package-types não é opcional
 
-::: danger wally-package-types não é opcional
 O shim que o Wally escreve é `return require(_Index[...])`, e `export type`
 **não atravessa** um require assim. Os valores resolvem, os tipos não:
 `Vide.source` funciona e `Vide.Source` vira `Unknown type`.

@@ -36,9 +36,24 @@ const B = Modux.Controller("B", { Require = { "A" } })
 O que **não** funciona é um usar o outro durante a carga do arquivo. No
 `OnInit` em diante, os dois existem.
 
-## Lado não atravessa
+:::tip Informação
+Se você eventualmente precisar que algum carregue antes do outro pois
+algum dado precisa ser gerado ou algo do tipo, um dos parâmetros dos
+props é a prioridade no load, maior -> primeiro, exemplo:
+```lua
+const A = Modux.Controller("A", { Require = { "B" }, Priority = 100 })
+const B = Modux.Controller("B", { Require = { "A" }, Priority = 50 })
+```
+Nesse caso o A carrega primeiro. Tem mais informações lá em abaixo.
+:::
 
-Um Controller que declara `Require` de um Service interrompe a geração:
+## Lado não atravessa
+Uma das coisas que permitiu essa versão ser mais escalada foi dividir o manifest
+entre clientside e serverside, por isso que existe uma cópia em cada, e de bônus
+Controllers não conseguem dar require em Service e Services não conseguem dar
+require em Controllers pois um vive no server e o outro no client.
+
+Um Controller que declara `Require` de um Service interrompe a geração do modux no cli:
 
 ```
 [Manifest] src/Ui/client/Hud/init.luau is client and requires "DataService",
@@ -47,7 +62,7 @@ which is server.
 ```
 
 Não é convenção nem lint: o gerador para. O lado sai do caminho da pasta, então
-mover o arquivo é o que resolve.
+mover o arquivo para o server ou client e trocar para controller ou service, é o que resolve.
 
 ## Priority
 

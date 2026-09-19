@@ -3,7 +3,7 @@ Abaixo, explico sobre como funciona a estrutura do gerador de arquivos, preenchi
 
 ## Watcher:
 O watcher lê o conteúdo de cada module e a partir deles, gera toda a estrutura de funções, parâmetros e alguns self values simples e então escreve as folhas de tipo em um estrutura:
-<FileTree :paths="[
+<FileTree title="Estrutura gerada" :paths="[
   'client/Controller/init.luau ',
   'client/Controller/Type.luau #(auto-gerada)',
 ]" />
@@ -33,9 +33,7 @@ O parser, responsável por identificar e tipar conforme os valores, é embutido 
 Parseia por todos os modules, controllers e services registrados e gera o type dele:
 ```sh
 modux generate
-```
-Output:
-```
+#OUTPUT:
 [modux] leaf: src/Player/server/PlayerService/Type.luau
 [modux] manifest server: src/Modux/server/Manifest/init.luau (6 modules)
 [modux] modules server: src/Modux/server/Modules.luau
@@ -44,8 +42,7 @@ Output:
 ```
 
 Arquivo que já está correto não é reescrito, então rodar de novo imprime:
-
-```
+```sh
 [modux] up to date.
 ```
 
@@ -71,25 +68,20 @@ comando para o CI.
 
 ```sh
 modux check
-```
-Output:
-```
+#OUTPUT:
 stale: src/Player/server/PlayerService/Type.luau
 modux: 1 file(s) out of date. Run `modux generate`.
 ```
-
 ### > modux list
 
 Lista os módulos encontrados:
 
 ```sh
 modux list
-```
-Output [Module] [Tipo] [Dependência]:
-```
-NetService    Service    src/Net/server/NetService/init.luau  deps: -
-ProfileService Service   src/Profile/server/ProfileService/init.luau  deps: PlayerService, NetService
-Vital         Component  src/Vital/server/Vital/init.luau  deps: VitalService
+#[Module]      [Tipo]     [Dependência]:
+NetService     Service    src/Net/server/NetService/init.luau  deps: -
+ProfileService Service    src/Profile/server/ProfileService/init.luau  deps: PlayerService, NetService
+Vital          Component  src/Vital/server/Vital/init.luau  deps: VitalService
 ```
 
 ### > modux extract
@@ -124,14 +116,11 @@ RoundController:OnInit(function(self)
 end)
 
 return RoundController
-
 ```
 Executando o extract:
 ```sh
-modux extract src/Player/server/PlayerService/init.luau
-```
-Ele irá mostrar no ouput como que foi parseado:
-```sh
+modux extract src/Round/client/RoundController/init.luau
+#OUTPUT:
 {
   "id": "RoundController",
   "kind": "Controller",

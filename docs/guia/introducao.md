@@ -11,13 +11,11 @@ Como por exemplo, se inserirmos o self com algum valor básico, ele vem com um t
 --!strict
 const Zombie = Modux.Controller("Zombie")
 
-function Zombie:Heal(amount: number, target: Instance)
+function Zombie:Heal(amount: number)
 	self.Health = amount
-	print(Amount, target)
 end
 
 Zombie.Health --> number
-Zombie:Heal("Abc") --> Type error, expected number got string
 ```	
 :::
 :::tip Dica:
@@ -35,7 +33,7 @@ lugar que utilize o self:
 ```lua
 const Zombie = Modux.Controller("Zombie")
 
-function Zombie:Heal(amount: number, target: Instance)
+function Zombie:Heal(amount: number)
 	self.Name = "Joaquim"
 	self.Age = 197
 end
@@ -43,14 +41,14 @@ end
 function Zombie:Teste()
 	self.Joaquim --> string
 	self.Age --> number | singleton de number 197
-end
+    self:Heal("Abc") --> Type Error: Expected number, got string
+end 
 ```
 :::
-Demonstração prática:
 <Shot
   src="/typeExample.gif"
   alt="autocomplete resolvendo o self"
-  title=""
+  title="Demonstração prática"
   caption="O self já vem tipado, sem você anotar nada!"
   width="700px"
 />
@@ -77,42 +75,61 @@ function Zombie:Heal(amount: number, target: Instance)
 end
 ```
 :::
+<Shot
+  src="/requireExample.gif"
+  alt="autocomplete resolvendo o self"
+  title="Demonstração prática"
+  caption="Sim! Um module pode requerir o outro (Dependency Injection)"
+  width="700px"
+/>
+
 A vantagem maior vantagem é, você não escreveu nenhum tipo. Dentro de Dependencies >
 `Skeleton` ele mostra para você exatamente quais métodos tem e quais parâmetros precisa
 Caso tente requerir algo que não existe, ele também acusa erro!
-
-E para o caso de componentes, vamos criar o `Highlight` como exemplo:
-::: demo
-```lua
-const Highlight = Modux.Component("Highlight", {
-    Tag = "Highlight"
-})
-
-function Highlight:CreateHighlight()
-    local newHighlight = Instance.new("Highlight")
-    newHighlight.Parent = self.Instance
-	-- self.Instance é a instancia taggeada
-end
-
-Highlight:OnInit(function(self)
-    self:CreateHighlight()
-end)
-```
-:::
-Com isso tudo o que tiver a tag Highlight no roblox automaticamente
-é associado à essa classe e o `OnInit` é chamado de imediato.
-No entanto caso queira criar um componente a partir de outra classe,
-não adicione uma tag, utilize o método `CreateComponent`,
-consulte a sessão de [Components](/arquitetura/componentes).
 
 O truque: um gerador lê os seus módulos e escreve uma folha de tipo por módulo.
 O framework junta essas folhas com type functions do Luau. Como isso funciona
 por dentro está em [Como a tipagem funciona](/tipagem/).
 
+E para o caso de componentes, vamos para o exemplo prático com um `Highlight` como exemplo:
+::: demo
+```lua
+local ServerScriptService = game:GetService("ServerScriptService")
+local Modux = require(ServerScriptService.server.Modux)
+
+const Highlight = Modux.Component("Highlight")
+
+Highlight:OnInit(function(self)
+	local new = Instance.new("Highlight")
+	new.Parent = self.Instance
+	task.delay(5, function()
+		self.Instance:Destroy()
+	end)
+end)
+
+return Highlight
+
+```
+:::
+Com isso tudo o que tiver a tag Highlight no roblox automaticamente
+é associado à essa classe e o `OnInit` é chamado de imediato.
+<Shot
+  src="/componentExample.gif"
+  alt="autocomplete resolvendo o self"
+  title="Demonstração prática"
+  caption="O loader carrega o CollectionService puxando existente e novos"
+  width="700px"
+/>
+
+No entanto caso queira criar um componente a partir de outra classe,
+não adicione uma tag, utilize o método `CreateComponent`,
+consulte a sessão de [Components](/arquitetura/componentes).
+
 ## Porque usar?
-Bom se a tipagem automático, bootstrap tipado, requires "ciclicos"com DI e tipados
-ainda não te convenceu, pensa no trabalho que é escrever métodos, parâmetros
-valores do self tudo à mão, o tempo inteiro, condizentes com os valores reais.
+Bom se a tipagem automático, bootstrap tipado, requires "ciclicos" resolvidos com DI 
+(Dependency Injection) tipados ainda não te convenceu, apenas pense no trabalho que seria
+escrever  métodos, parâmetros valores do self tudo à mão, o tempo inteiro, 
+condizentes com os valores e métodos em tempo real.
 
 Esse é o motivo que fazem muitos desistirem de tipagem em luau e com isso
 essa ferramenta se torna perfeita para todos.
@@ -144,9 +161,9 @@ Números medidos neste repositório, não estimados:
 
 O framework não é o gargalo em nada que deu para medir.
 
-### Aviso
-o gerador não consegue parsear 100% das libs, principalmente em casos de função
-pedindo um cast `::` para inserir de forma automática no self.
+### Parser
+o gerador não consegue parsear 100% das libs, principalmente em casos de função, 
+nesses casos, basta um cast `::` para inserir de forma automática no self.
 
 ::: demo
 ```lua

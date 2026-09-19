@@ -1,6 +1,6 @@
 # Ciclo de vida
 
-`OnInit` → `OnStart` → `OnTick` → `OnDestroy` (só componente).
+`OnInit` → `OnStart` → `OnTick` → `OnDestroy (para componentes)` 
 
 A injeção acontece **antes** de qualquer `OnInit`, o que faz dependência mútua
 A↔B funcionar: quando o teu código roda, tudo já existe.
@@ -27,18 +27,18 @@ Roda quando todos os `OnInit` terminaram. É onde você pode contar que o resto
 do jogo existe.
 
 ::: tip Padrão útil
-Um módulo com `Priority` alta roda o **primeiro** `OnStart` — depois de todo
-`OnInit`, antes de qualquer outro `OnStart`. É a janela certa para travar
-configuração, como o `start()` de uma lib de rede.
+Um módulo com `Priority` alta roda o **primeiro** `OnInit` e `OnStart`.
+É a maneira certa para garantir dados, como o `start()` de uma lib de rede.
 :::
 
 ## OnTick()
-
+O OnTick trabalha da mesma forma do OnInit e do OnStart, registrando um callback
+para depois ser carregado, no entanto ele também pode armazenar um tickrate
+para trabalhar conforme precisar.
 ```lua
 function M:OnTick(callback: (self, deltaTime: number) -> (), tickRate: number?, priority: number?)
 ```
-
-Sem os dois últimos: **1 Hz, priority 1**.
+O TickRate e o Priority são opcionais, o default é 1hz e prioridade 1,
 
 `priority` maior roda primeiro, e o empate desempata pela ordem de registro —
 determinístico, não muda quando outro módulo entra.
@@ -53,6 +53,7 @@ Net:OnTick(function(self)
 	self:Flush()
 end, 60, -1000)
 ```
+Esse é um exemplo de uso na lib do Lync
 
 ## OnDestroy()
 
@@ -61,13 +62,12 @@ function M:OnDestroy(callback: (self) -> ())
 ```
 
 **Só existe em Component.** Service e Controller são singletons e não têm essa
-fase, o que significa que um recurso de escopo global — um `effect` reativo, por
-exemplo — não tem onde ser solto.
+fase, o que significa que um `effect` reativo, por exemplo não tem onde ser solto.
 
-## Varredura de estado pré-existente
+## Convenção
 
 Jogadores que já estão no servidor quando o jogo sobe devem ser varridos no
-`OnStart`, não no `OnInit`:
+`OnStart`, não no `OnInit` caso queira garantia:
 
 ```lua
 PlayerService:OnInit(function(self)
@@ -81,5 +81,5 @@ PlayerService:OnStart(function(self)
 end)
 ```
 
-Varrendo no `OnInit`, os módulos de prioridade menor ainda não conectaram os
-handlers deles e perderiam quem já estava lá.
+Varrendo pelo no `OnInit`, os módulos de prioridade menor que ainda não 
+conectaram os handlers/eventos deles vão quem já está conectado no jogo.

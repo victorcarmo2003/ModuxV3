@@ -11,10 +11,9 @@ análise, por três peças que se encaixam.
 a **folha**. A folha exporta só a superfície pública:
 
 ```lua
--- src/Player/server/PlayerService/Type.luau  (gerado)
 export type Public = {
 	Players: { Player },
-	Joined: SignalLib.Signal<Player>,
+	Joined: SignalLib.Signal<Player>, --> Sim, ele faz require
 	Watch: (self: Public, player: Player) -> (),
 }
 ```
@@ -55,6 +54,11 @@ export type ServiceSelf<ID, P> = SelfOf.Build<
 `index<AllServices, ID>` pega a folha pelo ID. [`Pick.Table`](/tipagem/pick)
 recorta o Manifest pelas chaves declaradas em `Require`. O resultado é um
 `self` que sabe exatamente o que aquele módulo tem e alcança.
+
+:::tip Informação
+Sendo sincero a parte mais complicada foi transformar os strings em singletons
+dentro de uma tabela, por isso deixei o type Pick como publico
+:::
 
 ## A biblioteca de tipos
 
@@ -105,6 +109,11 @@ type _anchorRequired = Required<Example>
 
 Elas não são teste nem exemplo. São o que faz a função existir.
 
+:::tip Informação
+Não foi o tempo inteiro que isso de fato ocorreu mas como ocorreram
+algumas vezes e utilizar eles no próprio module resolveu, decidi manter
+:::
+
 ### Type function aplicada a genérico livre não reduz
 
 Esta é a que mais custa tempo, porque o sintoma cai longe da causa:
@@ -114,11 +123,8 @@ Cannot add property 'Metodo' to table 'setmetatable<Build<Public, {...}>, ...>'
 ```
 
 `function X:Metodo()` deixa de compilar num arquivo que estava certo. O que
-aconteceu é que `Build<...>` não reduziu, e o motivo está nos extras.
-
-Medido:
-
-| nos extras de `Build` | |
+aconteceu é que `Build<...>` não reduziu, e o motivo está nos outros.
+| nos extras de `Build` | reduz? |
 |---|---|
 | função **genérica** como campo direto | **não reduz** |
 | função não genérica | reduz |
@@ -128,6 +134,12 @@ Medido:
 A regra não é "genérico quebra". É **aplicação de type function não resolvida**
 alcançável a partir dos extras. É por isso que [nem toda lib pode entrar em
 `self.Libs`](/arquitetura/libs#limite).
+
+::: tip Informação
+Essa parta a IA explica melhor do que eu mesmo, mas para resumir algumas libs eu não
+consegui injetar em `self.Libs` por conta do typefunction delas, que acabava bagunçando
+muita coisa, então em alguns casos, o ideal é apenas usar o require direto mesmo
+:::
 
 ### `types` só existe dentro do corpo
 

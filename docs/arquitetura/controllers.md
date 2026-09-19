@@ -35,8 +35,8 @@ type ControllerProps = {
 }
 ```
 
-`ID` precisa ser um dos Controllers que existem no projeto. Um nome que não
-existe não compila — o Manifest do client é a lista fechada.
+Para o require, o `ID` precisa ser um dos Controllers que existem no projeto. 
+Um nome que não existe não compila — o Manifest do client é a lista fechada.
 
 ## Onde o arquivo mora
 
