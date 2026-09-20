@@ -61,14 +61,15 @@ Those 5.6 s split into four pieces, and none of them is the one you'd expect:
 
 | piece | cost | what it is |
 |---|---:|---|
-| Roblox definitions | 1,601 ms | 29% — nothing to do with your project |
+| Roblox definitions | 1,601 ms | 29% — nothing to do with Modux |
 | the first file | ~1,800 ms | 32% — building the framework's type graph, once |
 | the other 21 modules | ~2,000 ms | 36% — ~95 ms each |
 | everything else | ~160 ms | 3% — 39 files, ~4 ms each |
 
-**Almost a third was never your project.** Loading
+**Almost a third isn't Modux.** Loading
 `globalTypes.PluginSecurity.d.luau` costs 1.6 s on an empty file, and the same
-1.6 s on a 200-module project. Every table on this page that says "net" has
+1.6 s on a 200-module project. It's a constant of the Roblox toolchain, and it
+would show up the same on any Luau project. Every table on this page that says "net" has
 that constant subtracted; without subtracting it, everything looks tied.
 
 **Another third is paid once.** Going from an empty file to *any one* file of

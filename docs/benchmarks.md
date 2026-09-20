@@ -59,14 +59,15 @@ Dá para separar os 5,6 s em quatro pedaços, e nenhum deles é o que se imagina
 
 | pedaço | custo | o que é |
 |---|---:|---|
-| definitions da Roblox | 1 601 ms | 29% — não tem nada a ver com o seu projeto |
+| definitions da Roblox | 1 601 ms | 29% — não tem nada a ver com o Modux |
 | o primeiro arquivo | ~1 800 ms | 32% — montar o grafo de tipos do framework, uma vez |
 | os outros 21 módulos | ~2 000 ms | 36% — ~95 ms cada |
 | todo o resto | ~160 ms | 3% — 39 arquivos, ~4 ms cada |
 
-**Quase um terço nunca foi o seu projeto.** Carregar o
+**Quase um terço não é o Modux.** Carregar o
 `globalTypes.PluginSecurity.d.luau` custa 1,6 s num arquivo vazio, e custa os
-mesmos 1,6 s num projeto de 200 módulos. Toda tabela desta página que fala em
+mesmos 1,6 s num projeto de 200 módulos. É constante da toolchain da Roblox, e
+apareceria igual em qualquer projeto Luau. Toda tabela desta página que fala em
 "líquido" está com essa constante descontada; sem descontar, tudo parece
 empatado.
 
