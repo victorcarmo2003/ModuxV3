@@ -56,8 +56,8 @@ recorta o Manifest pelas chaves declaradas em `Require`. O resultado é um
 `self` que sabe exatamente o que aquele módulo tem e alcança.
 
 :::tip Informação
-Sendo sincero a parte mais complicada foi transformar os strings em singletons
-dentro de uma tabela, por isso deixei o type Pick como publico
+Sendo sincero, a parte mais complicada foi transformar as strings em singletons
+dentro de uma tabela — por isso o `Pick` ficou público.
 :::
 
 ## A biblioteca de tipos
@@ -110,8 +110,8 @@ type _anchorRequired = Required<Example>
 Elas não são teste nem exemplo. São o que faz a função existir.
 
 :::tip Informação
-Não foi o tempo inteiro que isso de fato ocorreu mas como ocorreram
-algumas vezes e utilizar eles no próprio module resolveu, decidi manter
+Isso não acontece sempre, mas aconteceu vezes o bastante — e instanciar no
+próprio arquivo sempre resolveu. Por isso ficou como regra.
 :::
 
 ### Type function aplicada a genérico livre não reduz
@@ -123,7 +123,8 @@ Cannot add property 'Metodo' to table 'setmetatable<Build<Public, {...}>, ...>'
 ```
 
 `function X:Metodo()` deixa de compilar num arquivo que estava certo. O que
-aconteceu é que `Build<...>` não reduziu, e o motivo está nos outros.
+aconteceu é que `Build<...>` não reduziu, e o motivo está nos extras:
+
 | nos extras de `Build` | reduz? |
 |---|---|
 | função **genérica** como campo direto | **não reduz** |
@@ -136,9 +137,9 @@ alcançável a partir dos extras. É por isso que [nem toda lib pode entrar em
 `self.Libs`](/arquitetura/libs#limite).
 
 ::: tip Informação
-Essa parta a IA explica melhor do que eu mesmo, mas para resumir algumas libs eu não
-consegui injetar em `self.Libs` por conta do typefunction delas, que acabava bagunçando
-muita coisa, então em alguns casos, o ideal é apenas usar o require direto mesmo
+Resumindo: algumas libs eu não consegui injetar em `self.Libs` por causa das type
+functions que elas carregam, que acabavam bagunçando a tipagem inteira. Nesses
+casos o certo é usar o `require` direto.
 :::
 
 ### `types` só existe dentro do corpo

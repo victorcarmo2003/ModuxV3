@@ -1,6 +1,6 @@
 # Rogen
 
-Os comandos para execução são:"
+Os comandos para execução são:
 ```sh
 rogen build     # gera uma única vez
 rogen watch     # gera continuamente
@@ -44,10 +44,10 @@ A configuração fica em `.rogen.json`. Entradas escritas à mão em
 DataModel.
 
 ::: tip Dica
-O modo watch já é incluido em tasks.json do template padrão
-uso no vscode: 
+O modo watch já vem no `tasks.json` do template padrão.
+Uso no VS Code:
 
-`CTRL + SHIT + P` e `Tasks: Run Task` e por fim `dev`
+`CTRL + SHIFT + P` e `Tasks: Run Task` e por fim `dev`
 
 Consulte a [documentação do rogen](https://rogen-playfully.vercel.app)
 para mais informações.

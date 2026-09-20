@@ -38,7 +38,7 @@ para trabalhar conforme precisar.
 ```lua
 function M:OnTick(callback: (self, deltaTime: number) -> (), tickRate: number?, priority: number?)
 ```
-O TickRate e o Priority são opcionais, o default é 1hz e prioridade 1,
+O `tickRate` e o `priority` são opcionais: o padrão é 1 Hz e prioridade 1.
 
 `priority` maior roda primeiro, e o empate desempata pela ordem de registro —
 determinístico, não muda quando outro módulo entra.
@@ -53,7 +53,8 @@ Net:OnTick(function(self)
 	self:Flush()
 end, 60, -1000)
 ```
-Esse é um exemplo de uso na lib do Lync
+Esse é o uso real na lib de rede Lync: prioridade alta no módulo para subir
+primeiro, prioridade baixa no tick para dar o flush por último.
 
 ## OnDestroy()
 
@@ -62,7 +63,8 @@ function M:OnDestroy(callback: (self) -> ())
 ```
 
 **Só existe em Component.** Service e Controller são singletons e não têm essa
-fase, o que significa que um `effect` reativo, por exemplo não tem onde ser solto.
+fase — o que significa que um `effect` reativo, por exemplo, não tem onde ser
+solto.
 
 ## Convenção
 
@@ -81,5 +83,5 @@ PlayerService:OnStart(function(self)
 end)
 ```
 
-Varrendo pelo no `OnInit`, os módulos de prioridade menor que ainda não 
-conectaram os handlers/eventos deles vão quem já está conectado no jogo.
+Varrendo no `OnInit`, os módulos de prioridade menor ainda não conectaram os
+handlers deles e perdem quem já estava no jogo.
