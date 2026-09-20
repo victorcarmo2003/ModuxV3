@@ -13,10 +13,10 @@ rojo sourcemap --watch default.project.json --output sourcemap.json
 ```
 
 ::: tip Dica:
-O modo watch já é incluido em tasks.json do template padrão
-uso no vscode: 
+O modo watch já vem no `tasks.json` do template padrão.
+Uso no VS Code:
 
-`CTRL + SHIT + P` e `Tasks: Run Task` e por fim `rojo`
+`CTRL + SHIFT + P` e `Tasks: Run Task` e por fim `rojo`
 :::
 
 ## O watch morre quando uma pasta é desvinculada {#crash}

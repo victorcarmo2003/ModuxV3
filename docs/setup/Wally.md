@@ -1,5 +1,5 @@
 # Wally
-Wally é o gerenciador de pacotes utilizado no template, o uso é bem simples, após a instalação com o rokit pacotes podem ser adicionados pesquisando no site official do [Wally](https://wally.run) ou via CLI com:
+Wally é o gerenciador de pacotes utilizado no template, o uso é bem simples, após a instalação com o rokit pacotes podem ser adicionados pesquisando no site oficial do [Wally](https://wally.run) ou via CLI com:
 ```sh
 wally search "loleris profilestore"
 ```
@@ -35,7 +35,7 @@ A estrutura seria:
 ```toml
 nome_que_preferir = "autor/package@versão"
 ```
-E após adicionar aquele pacote específico, pode-se instalar para baixar ele para o teu projeto:
+E após adicionar aquele pacote específico, é só instalar para baixá-lo no teu projeto:
 ```sh
 wally install
 ```
@@ -55,7 +55,7 @@ Como o modux trabalha com uma estrutura --!strict, ou seja tipagem ativa, precis
 ```sh
 wally-package-types --sourcemap sourcemap.json Packages/ ServerPackages/ DevPackages/
 ```
-Isso irá fazer com que o wally exponha os types que compõem aquele framework específico para utilizarmos ele da forma correta e prevenir erros. Convetendo-o em algo assim:
+Isso irá fazer com que o wally exponha os types que compõem aquele framework específico para os usarmos da forma correta e prevenir erros, convertendo o shim em algo assim:
 
 ```luau
 local REQUIRED_MODULE = require(script.Parent._Index["ddashdev_profilestore@1.1.0"]["profilestore"])
@@ -66,8 +66,8 @@ export type ProfileStore<T> = REQUIRED_MODULE.ProfileStore<T>
 export type ProfileStoreModule = REQUIRED_MODULE.ProfileStoreModule 
 return REQUIRED_MODULE
 ```
-E com isso o parser irá conseguir puxar essa tipagem para o seu uso, além de expor ela
-para caso você mesmo precise fazer algum cast e receber os valores corretos!
+E com isso o parser irá conseguir puxar essa tipagem para o seu uso, além de expô-la
+para o caso de você mesmo precisar fazer algum cast e receber os valores corretos.
 
 ::: warning wally-package-types não é opcional
 

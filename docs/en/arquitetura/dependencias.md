@@ -7,7 +7,7 @@ A module declares what it needs in `Require`, and receives it in
 const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton", "Camera" } })
 
 function Zombie:Attack()
-	self.Dependencies.Skeleton:ShotArrow()
+	self.Dependencies.Skeleton:ShootArrow()
 	self.Dependencies.Camera:Shake(2)
 end
 ```

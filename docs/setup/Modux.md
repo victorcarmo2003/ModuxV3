@@ -2,7 +2,7 @@
 Abaixo, explico sobre como funciona a estrutura do gerador de arquivos, preenchimento e também alguns comandos que podem ser utilizados.
 
 ## Watcher:
-O watcher lê o conteúdo de cada module e a partir deles, gera toda a estrutura de funções, parâmetros e alguns self values simples e então escreve as folhas de tipo em um estrutura:
+O watcher lê o conteúdo de cada module e a partir deles, gera toda a estrutura de funções, parâmetros e alguns self values simples e então escreve as folhas de tipo nesta estrutura:
 <FileTree title="Estrutura gerada" :paths="[
   'client/Controller/init.luau ',
   'client/Controller/Type.luau #(auto-gerada)',
@@ -24,7 +24,7 @@ export type ComponentAccess = {}
 return {}
 ```
 
-O parser, responsável por identificar e tipar conforme os valores, é embutido não há nada para instalar ao lado do binário.
+O parser, responsável por identificar e tipar conforme os valores, é embutido: não há nada para instalar ao lado do binário.
 
 ## Comandos
 
@@ -48,8 +48,8 @@ Arquivo que já está correto não é reescrito, então rodar de novo imprime:
 
 ### > modux watch
 
-Regenera a cada mudança até você interromper. É o que compõe a tarefa `dev` do template principal 
-executado pelo vscode, também é o que você normalmente irá utilizar.
+Regenera a cada mudança até você interromper. É o que compõe a tarefa `dev` do template, executada pelo VS Code, e é o que
+você normalmente vai usar.
 
 ```sh
 modux watch

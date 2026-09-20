@@ -56,8 +56,8 @@ const Player = Modux.Service("Player", { Priority = 900 })
 const Data = Modux.Service("Data", { Require = { "Player" }, Priority = 800 })
 ```
 
-`Priority` **não** não interfere na dependência. Declarar `Require` 
-garante que o módulo existe e será injetado normalmente; `Priority` 
-só controla quem roda a fase antes.
+`Priority` **não** interfere na dependência. Declarar `Require` garante que o
+módulo existe e será injetado normalmente; `Priority` só controla quem roda a
+fase antes.
 
 Ver [Ciclo de vida](/arquitetura/ciclo-de-vida).

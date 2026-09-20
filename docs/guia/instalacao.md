@@ -168,7 +168,7 @@ nome.
 
 ## Gerado, não editar
 
-Quatro arquivos são saída do gerador e são reescritos a cada `modux generate`:
+Estes arquivos são saída do gerador e são reescritos a cada `modux generate`:
 
 <FileTree title="saida do gerador" :paths="[
   'src/Modux/client/Manifest/init.luau # gerado',

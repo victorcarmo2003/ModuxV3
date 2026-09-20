@@ -17,10 +17,12 @@ hero:
       link: /setup/
 
 features:
-  - title: Sem anotar nada
-    details: Um gerador lê os seus módulos e escreve uma folha de tipo por módulo. O framework junta essas folhas com type functions do Luau. Você não declara a mesma superfície duas vezes.
+  - title: Tipagem automática
+    details: Escreva Luau normal; o Modux deriva a superfície tipada. Um gerador lê os seus módulos e escreve uma folha de tipo por módulo, e o framework junta essas folhas com type functions do Luau. Você não declara a mesma superfície duas vezes.
   - title: Lado não atravessa
     details: Um Controller que declara Require de um Service interrompe a geração, com uma mensagem dizendo quem está de que lado. Comunicação entre lados é rede, e rede é explícita.
   - title: Custo medido, não estimado
-    details: 0,21 µs por componente por frame. 1,3% do orçamento de 60 fps com mil componentes. O que pesa é o corpo que você escreve, não o framework.
+    details: 0,21 µs por componente por frame; 1,3% do orçamento de 60 fps com mil componentes. Os números, o método e o que foi comparado estão na página de Benchmarks.
+    link: /benchmarks
+    linkText: Ver a metodologia
 ---

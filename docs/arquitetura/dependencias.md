@@ -7,7 +7,7 @@ já tipado.
 const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton", "Camera" } })
 
 function Zombie:Attack()
-	self.Dependencies.Skeleton:ShotArrow()
+	self.Dependencies.Skeleton:ShootArrow()
 	self.Dependencies.Camera:Shake(2)
 end
 ```
@@ -44,11 +44,12 @@ props é a prioridade no load, maior -> primeiro, exemplo:
 const A = Modux.Controller("A", { Require = { "B" }, Priority = 100 })
 const B = Modux.Controller("B", { Require = { "A" }, Priority = 50 })
 ```
-Nesse caso o A carrega primeiro. Tem mais informações lá em abaixo.
+Nesse caso o A carrega primeiro. Mais detalhes em [Priority](#priority),
+logo abaixo.
 :::
 
 ## Lado não atravessa
-Uma das coisas que permitiu essa versão ser mais escalada foi dividir o manifest
+Uma das coisas que permitiu esta versão escalar melhor foi dividir o Manifest
 entre clientside e serverside, por isso que existe uma cópia em cada, e de bônus
 Controllers não conseguem dar require em Service e Services não conseguem dar
 require em Controllers pois um vive no server e o outro no client.

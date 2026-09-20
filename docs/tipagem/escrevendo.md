@@ -20,8 +20,8 @@ Type function paga em dois casos:
 
 :::tip Informação
 Para a maioria das coisas os built-ins já resolvem o seu problema, keyof
-com intersection e tipagem genérica já cobre a mairoria das coisas, inclusive
-é o que eu uso para converter os strings para singleton de dentro das tabelas
+com intersection e tipagem genérica já cobre a maioria dos casos — inclusive
+é o que eu uso para converter as strings em singleton dentro das tabelas.
 :::
 
 ## O esqueleto
@@ -62,7 +62,8 @@ nada avisa.
 Toda função daqui termina com `type _anchorX = X<...>`. Não são exemplos.
 
 :::tip Informação
-Ou talvez seja, como as vezes ele não reconhece o type, melhor só colocar mesmo🫠
+Ou talvez sejam: como às vezes ele não reconhece o tipo, melhor deixar a âncora
+lá de qualquer jeito 🫠
 :::
 
 ## O catálogo de falhas silenciosas
@@ -106,24 +107,24 @@ Depois de qualquer função que modifica, escreva um teste que **deve continuar
 errando**:
 
 ```lua
-type _sanidade: Config = { nome = "a" }   -- faltam campos: tem que errar
+local _sanidade: Config = { nome = "a" }   -- faltam campos: tem que errar
 ```
 
 Se parar de errar, faltou o `types.copy`.
 
 ## Loop infinito aborta a análise
 
-Um problema chato nos typefunctions é não detecta sempre os loops infinitos.
-Então meio que Type function que não termina = análise abortada por timeout, 
-e o lsp passa acusar `Type is too complex` ou passa a mostrar tudo como `any`.
+Um problema chato das type functions é que nem sempre o loop infinito é
+detectado. Type function que não termina = análise abortada por timeout, e o LSP
+passa a acusar `Type is too complex` ou a mostrar tudo como `any`.
 
 Todo walker recursivo nasce com uma tabela `visitados`, e o registro acontece
 **antes** de descer, não depois. Ou com um limite de profundidade, como o
 [`Merge`](/tipagem/struct#merge) faz com 8.
 
-Se o editor começou a mostrar tudo como `any` ou gerou `Type is too Complex` 
-logo depois de você mexer numa type function, procure recursão ou loops dentro
-que não fazem sentido antes de ver qualquer outra coisa.
+Se o editor começou a mostrar tudo como `any` ou passou a acusar
+`Type is too complex` logo depois de você mexer numa type function, procure
+recursão ou loop que não faz sentido antes de olhar qualquer outra coisa.
 
 ## Ordem não é garantida
 
@@ -132,8 +133,8 @@ interseção de overloads, derivar ordem de argumentos — precisa de `table.sor
 explícito, senão o bug só aparece quando a tabela cresce.
 
 :::tip Informação
-Inclusive você vai perceber que todas as tabelas sempre retornam o valor
-de trás para frente, não sei o motivo, mas é assim que a vida é.
+Você vai reparar que as tabelas costumam devolver os campos de trás para frente.
+Não descobri o motivo — só não confie na ordem.
 :::
 
 ## Limites do sandbox
@@ -148,7 +149,7 @@ Três consequências:
 - **Não existe higher-order.** Você não passa uma type function como argumento
   de outra. O contorno é despachar por singleton de string.
 - **Não existe singleton numérico.** Para devolver número, use
-  `types.singleton(tostring(n))` caso contrário você perde ele.
+  `types.singleton(tostring(n))`; caso contrário você perde o valor.
 
 ## Sondando
 

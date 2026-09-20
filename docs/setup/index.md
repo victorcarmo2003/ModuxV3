@@ -3,15 +3,18 @@
 Montar o projeto à mão, ferramenta por ferramenta. Para começar clonando o
 template pronto, ver [Instalação](/guia/instalacao).
 
-Abaixo eu explico as duas formas de instalar tudo, a automática, puxando do github e só vinculando tudo.
+Abaixo eu explico as duas formas de montar o projeto: a automática, clonando o
+template do GitHub, e a manual, ferramenta por ferramenta.
 ## Fluxo manual:
-No caso do setup manual, se faz necessário baixar o modux do repositório oficial na fork do [Framework](https://github.com/victorcarmo2003/ModuxV3/tree/framework) e inserir em src/
+No setup manual, o primeiro passo é baixar o Modux da branch
+[framework](https://github.com/victorcarmo2003/ModuxV3/tree/framework) do
+repositório oficial e colocá-lo em `src/`.
 
-Sim é bem simples pois a arquitetura do rogen é feature-based 😎🥂
+É simples porque a arquitetura do rogen é feature-based 😎🥂
 
 Rokit:
 ```sh
-rokit init        				# inicializa o wally para baixar as tools
+rokit init        				# cria o rokit.toml, que fixa as versões das tools
 ```
 Em seguida abrir o arquivo rokit.toml, colar:
 ```toml
