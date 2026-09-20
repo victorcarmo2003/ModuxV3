@@ -7,17 +7,22 @@ The watcher reads the contents of each module and from them generates the whole
 structure of functions, parameters and some simple self values, then writes the
 type leaves into a structure:
 <FileTree title="generated structure" :paths="[
-  'client/Controller/init.luau ',
-  'client/Controller/Type.luau #(auto-generated)',
+  'src/Example/client/ExampleController.luau # yours',
+  'src/Types/client/ExampleController.luau #(auto-generated)',
 ]" />
+
+The leaf doesn't sit next to the module: it goes to
+`src/Types/<side>/<Id>.luau`, addressed by ID. That's why a module can be a
+loose file — up to **0.6.11** the folder was mandatory only so two neighbouring
+modules wouldn't fight over the same `Type.luau`.
 
 And it also fills in the Manifest. On the client side, for example:
 ```luau
 local StarterScripts = game:GetService("StarterPlayer").StarterPlayerScripts
-local Example = require(StarterScripts.client.Example.Controller.Type)
+local Example = require(StarterScripts.client.Types.ExampleController)
 
 export type AllControllers = {
-	Example: Example.Public,
+	ExampleController: Example.Public,
 }
 
 export type AllComponents = {}
@@ -39,7 +44,7 @@ its type:
 ```sh
 modux generate
 #OUTPUT:
-[modux] leaf: src/Player/server/PlayerService/Type.luau
+[modux] leaf: src/Types/server/PlayerService.luau
 [modux] manifest server: src/Modux/server/Manifest/init.luau (6 modules)
 [modux] modules server: src/Modux/server/Modules.luau
 [modux] libs: src/Modux/shared/Libs.luau
@@ -74,7 +79,7 @@ Works as an integrity check. It fails if anything on disk differs from what
 ```sh
 modux check
 #OUTPUT:
-stale: src/Player/server/PlayerService/Type.luau
+stale: src/Types/server/PlayerService.luau
 modux: 1 file(s) out of date. Run `modux generate`.
 ```
 ### > modux list
@@ -84,10 +89,43 @@ Lists the modules it found:
 ```sh
 modux list
 #[Module]      [Kind]     [Dependency]:
-NetService     Service    src/Net/server/NetService/init.luau  deps: -
+NetService     Service    src/Net/server/NetService.luau  deps: -
 ProfileService Service    src/Profile/server/ProfileService/init.luau  deps: PlayerService, NetService
-Vital          Component  src/Vital/server/Vital/init.luau  deps: VitalService
+Vital          Component  src/Vital/server/Vital.luau  deps: VitalService
 ```
+
+`ProfileService` shows up as a folder on purpose: it keeps a `Template.luau` of
+its own. A module with a sibling stays a folder, a module on its own is a file,
+and both shapes give the same instance.
+
+### > modux fix
+
+Flattens every module still living alone inside a folder: `Foo/init.luau`
+becomes `Foo.luau`. This is the migration command for anyone coming from
+**0.6.11**.
+
+```sh
+modux fix --dry-run    # lists what would move, touching nothing
+modux fix
+#OUTPUT:
+[modux] src/Net/server/NetService/init.luau  ->  src/Net/server/NetService.luau
+[modux] kept src/Profile/server/ProfileService/init.luau: ... still holds Template.luau — left as a folder on purpose
+[modux] folha anterior a 0.7.0 removida: src/Profile/server/ProfileService/Type.luau
+[modux] run `modux generate` to write the leaves in their new place,
+[modux] then `rogen build` again so Types/ enters the project file
+```
+
+A folder holding another file is **not** flattened — that one is yours. And the
+old `Type.luau` is removed even from a module that kept its folder: it would
+otherwise become an outdated copy of the type that nobody writes any more.
+
+::: warning The two steps after fix aren't optional
+`rogen` derives the project file from the folder structure, and only sees
+`src/Types/` once there's a `.luau` inside it. So the first migration needs
+`modux generate` (which writes the leaves) and `rogen build` **again** (which
+maps them). Cloning the template skips all of this, because the leaves are
+committed there.
+:::
 
 ### > modux extract
 
@@ -125,12 +163,12 @@ return RoundController
 ```
 Running extract:
 ```sh
-modux extract src/Round/client/RoundController/init.luau
+modux extract src/Round/client/RoundController.luau
 #OUTPUT:
 {
   "id": "RoundController",
   "kind": "Controller",
-  "file": "C:/Users/hakor/Documents/GitHub/ModuxTemplate/src/Round/client/RoundController/init.luau",
+  "file": "C:/Users/hakor/Documents/GitHub/ModuxTemplate/src/Round/client/RoundController.luau",
   "services": [
     {
       "alias": "ReplicatedStorage",

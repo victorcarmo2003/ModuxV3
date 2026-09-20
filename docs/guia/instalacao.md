@@ -157,14 +157,26 @@ Em qualquer pasta sob `src/`, e o lado sai do caminho: pasta `client` vai para
 StarterPlayerScripts, `server` para ServerScriptService, e o resto é shared.
 
 <FileTree title="uma feature" :paths="[
-  'src/Vital/client/VitalController/init.luau',
-  'src/Vital/server/VitalService/init.luau',
-  'src/Vital/server/Vital/init.luau # componente',
+  'src/Vital/client/VitalController.luau',
+  'src/Vital/server/VitalService.luau',
+  'src/Vital/server/Vital.luau # componente',
 ]" />
 
-Um módulo é uma pasta com `init.luau`, nunca um arquivo solto: o gerador escreve
-o `Type.luau` ao lado do módulo, e dois módulos na mesma pasta colidiriam nesse
-nome.
+Um módulo é **um arquivo**. Criar um Controller novo é criar um arquivo, e nada
+mais.
+
+::: tip Pasta também vale
+Se o módulo precisar de arquivos só dele, ele vira uma pasta com `init.luau` e
+os irmãos dentro — é o que o `ProfileService` do template faz com o
+`Template.luau`. As duas formas dão exatamente a **mesma instância**: o Rojo
+transforma `Foo/init.luau` num ModuleScript chamado `Foo` no mesmo pai onde
+`Foo.luau` nasceria. Nenhum require muda.
+
+Até a versão **0.6.11** a pasta era obrigatória, porque o `Type.luau` era
+escrito ao lado do módulo e dois módulos soltos na mesma pasta colidiriam nesse
+nome. Da **0.7.0** em diante o tipo mora em `src/Types/`, endereçado pelo ID do
+módulo, e a colisão deixou de existir.
+:::
 
 ## Gerado, não editar
 
@@ -176,11 +188,20 @@ Estes arquivos são saída do gerador e são reescritos a cada `modux generate`:
   'src/Modux/server/Manifest/init.luau # gerado',
   'src/Modux/server/Modules.luau # gerado',
   'src/Modux/shared/Libs.luau # gerado',
-  'src/Vital/server/VitalService/init.luau # seu',
-  'src/Vital/server/VitalService/Type.luau # gerado',
+  'src/Types/client/VitalController.luau # gerado',
+  'src/Types/server/VitalService.luau # gerado',
+  'src/Vital/server/VitalService.luau # seu',
 ]" />
 
-Um `Type.luau` por módulo seu, ao lado dele.
+Uma folha de tipo por módulo seu, em `src/Types/<lado>/<Id>.luau`. O lado está
+no caminho por causa da replicação: o tipo de um Controller precisa chegar ao
+cliente, o de um Service não pode.
+
+`src/Types/` é uma feature como qualquer outra aos olhos do [Rogen](/setup/Rogen)
+— pastas `client`, `server` e `shared` dentro dela caem nos serviços de sempre.
+Ela **vai versionada**: o rogen só enxerga uma pasta depois que ela tem `.luau`
+dentro, então sem as folhas no repositório o primeiro `rogen build` de um clone
+não a mapearia.
 
 ::: tip Por que um script para os pacotes
 `wally install` reescreve os shims de `Packages/` do zero, e com isso apaga o
