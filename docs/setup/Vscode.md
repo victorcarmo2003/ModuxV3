@@ -154,7 +154,7 @@ nesse processo para saber quando recarregar.
 
 Uma tarefa fazendo o mesmo põe dois rojo escrevendo o mesmo `sourcemap.json`,
 e o servidor só escuta as notificações do dele. O sintoma é o que mais custa a
-diagnosticar: o `Type.luau` é reescrito na hora, mas o autocomplete continua
+diagnosticar: a folha de tipo é reescrita na hora, mas o autocomplete continua
 mostrando o estado anterior.
 
 Se ficar atrasado mesmo assim: `CTRL + SHIFT + P` e **Luau: Reload Language

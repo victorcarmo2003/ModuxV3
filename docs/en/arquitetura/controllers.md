@@ -45,7 +45,7 @@ Any folder under `src/` that has `client` in its path:
 
 <FileTree :paths="[
   'src/Camera/client/Camera/init.luau',
-  'src/Input/client/InputController/init.luau',
+  'src/Input/client/InputController.luau',
 ]" />
 
 ## What it reaches

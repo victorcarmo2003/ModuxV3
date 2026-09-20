@@ -213,15 +213,19 @@ vai para StarterPlayerScripts, `server` para ServerScriptService, e o resto é
 shared.
 
 ```
-src/Entity/client/Zombie/init.luau      -> Controller de client
-src/Systems/server/Data/init.luau       -> Service de server
-src/Components/client/Highlight/init.luau
+src/Entity/client/Zombie.luau           -> Controller de client
+src/Systems/server/Data.luau            -> Service de server
+src/Components/client/Highlight.luau
 ```
+
+Um módulo é um arquivo. Se ele precisar de arquivos só dele, vira uma pasta
+com `init.luau` e os irmãos dentro — as duas formas dão a mesma instância.
 
 ## Gerado, não editar
 
-`Type.luau` de cada módulo, `Manifest/` e `Modules.luau` de cada lado são saída
-do gerador. Editar é perder na próxima geração.
+A folha de tipo de cada módulo (`src/Types/<lado>/<Id>.luau`), o `Manifest/` e
+o `Modules.luau` de cada lado são saída do gerador. Editar é perder na próxima
+geração.
 
 ```sh
 modux generate    # escreve tudo uma vez

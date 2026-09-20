@@ -158,7 +158,7 @@ process to know when to reload.
 
 A task doing the same thing puts two rojos writing the same `sourcemap.json`,
 and the server only listens to notifications from its own. The symptom is the
-one that costs the most to diagnose: `Type.luau` gets rewritten right away, but
+one that costs the most to diagnose: the type leaf gets rewritten right away, but
 autocomplete keeps showing the previous state.
 
 If it lags behind anyway: `CTRL + SHIFT + P` and **Luau: Reload Language

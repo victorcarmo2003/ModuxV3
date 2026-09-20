@@ -173,8 +173,8 @@ mudar depois é migração.
 
 ### E a tipagem, com duas pessoas?
 
-A pergunta natural: se o seu amigo edita um módulo, o `Type.luau` chega pronto
-no seu disco, ou o seu gerador precisa refazer?
+A pergunta natural: se o seu amigo edita um módulo, a folha de tipo dele chega
+pronta no seu disco, ou o seu gerador precisa refazer?
 
 **Chega pronto, e o seu gerador concorda com ele.** O gerador é determinístico
 — mesma entrada, mesma saída, byte a byte — e só escreve quando o conteúdo
@@ -183,8 +183,8 @@ resultado, vê que o arquivo já está correto e não escreve nada. Sem loop, se
 guerra de escrita.
 
 ::: warning O Manifest pode piscar
-O `Type.luau` é por módulo, mas o Manifest é **um só**, compartilhado, e lista
-todos os módulos do lado.
+A folha é por módulo, mas o Manifest é **um só**, compartilhado, e lista todos
+os módulos do lado.
 
 Se o modux da outra pessoa rodar na janela de um segundo entre o seu módulo
 novo existir e chegar lá, ele gera um Manifest **sem** o seu módulo, e esse

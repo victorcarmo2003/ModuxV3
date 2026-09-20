@@ -22,7 +22,7 @@ Then open the rokit.toml file and paste:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/modux@0.6.11"
+modux = "victorcarmo2003/modux@0.7.0"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
