@@ -39,8 +39,8 @@ function Zombie:Heal(amount: number)
 end
 
 function Zombie:Teste()
-	self.Joaquim --> string
-	self.Age --> number | singleton de number 197
+	self.Name --> string
+	self.Age --> number
     self:Heal("Abc") --> Type Error: Expected number, got string
 end 
 ```
