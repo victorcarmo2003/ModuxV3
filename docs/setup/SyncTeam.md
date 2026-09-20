@@ -75,7 +75,7 @@ A regra é sobre filhos, não sobre intenção: uma pasta cujo único conteúdo 
 Até a 0.6.11 isso era uma dependência acidental desagradável — o módulo vivia
 numa pasta, e essa pasta só sobrevivia porque o `Type.luau` gerado estava lá
 do lado fazendo companhia. A forma no disco estava sendo sustentada por um
-arquivo gerado. Com o tipo em `src/Types/`, o arquivo solto virou a forma
+arquivo gerado. Com o tipo em `src/ModuxTypes/`, o arquivo solto virou a forma
 esperada, e a normalização do SyncTeam simplesmente concorda com ela.
 
 Módulo que guarda arquivo próprio — o `ProfileService` do template, com o seu

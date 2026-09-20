@@ -8,11 +8,11 @@ structure of functions, parameters and some simple self values, then writes the
 type leaves into a structure:
 <FileTree title="generated structure" :paths="[
   'src/Example/client/ExampleController.luau # yours',
-  'src/Types/client/ExampleController.luau #(auto-generated)',
+  'src/ModuxTypes/client/ExampleController.luau #(auto-generated)',
 ]" />
 
 The leaf doesn't sit next to the module: it goes to
-`src/Types/<side>/<Id>.luau`, addressed by ID. That's why a module can be a
+`src/ModuxTypes/<side>/<Id>.luau`, addressed by ID. That's why a module can be a
 loose file — up to **0.6.11** the folder was mandatory only so two neighbouring
 modules wouldn't fight over the same `Type.luau`.
 
@@ -44,7 +44,7 @@ its type:
 ```sh
 modux generate
 #OUTPUT:
-[modux] leaf: src/Types/server/PlayerService.luau
+[modux] leaf: src/ModuxTypes/server/PlayerService.luau
 [modux] manifest server: src/Modux/server/Manifest/init.luau (6 modules)
 [modux] modules server: src/Modux/server/Modules.luau
 [modux] libs: src/Modux/shared/Libs.luau
@@ -79,7 +79,7 @@ Works as an integrity check. It fails if anything on disk differs from what
 ```sh
 modux check
 #OUTPUT:
-stale: src/Types/server/PlayerService.luau
+stale: src/ModuxTypes/server/PlayerService.luau
 modux: 1 file(s) out of date. Run `modux generate`.
 ```
 ### > modux list
@@ -121,7 +121,7 @@ otherwise become an outdated copy of the type that nobody writes any more.
 
 ::: warning The two steps after fix aren't optional
 `rogen` derives the project file from the folder structure, and only sees
-`src/Types/` once there's a `.luau` inside it. So the first migration needs
+`src/ModuxTypes/` once there's a `.luau` inside it. So the first migration needs
 `modux generate` (which writes the leaves) and `rogen build` **again** (which
 maps them). Cloning the template skips all of this, because the leaves are
 committed there.

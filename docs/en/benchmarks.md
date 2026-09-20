@@ -249,7 +249,7 @@ superlinear in **each** side's N, not in the total.
 
 ::: tip Redone on modux 0.7.0: the wall didn't move
 0.7.0 took the type leaf out from beside the module and moved it to
-`src/Types/<side>/<Id>.luau`. The obvious question is whether that touched the
+`src/ModuxTypes/<side>/<Id>.luau`. The obvious question is whether that touched the
 cost. It didn't — measured A/B on the same machine in the same session, N=100
 controllers:
 

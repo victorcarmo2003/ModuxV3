@@ -180,7 +180,7 @@ the siblings inside — that's what the template's `ProfileService` does with it
 
 Up to **0.6.11** the folder was mandatory, because `Type.luau` was written next
 to the module and two loose modules in the same folder would collide on that
-name. From **0.7.0** on the type lives in `src/Types/`, addressed by the
+name. From **0.7.0** on the type lives in `src/ModuxTypes/`, addressed by the
 module's ID, and the collision stopped existing.
 :::
 
@@ -194,20 +194,39 @@ Four files are generator output and get rewritten on every `modux generate`:
   'src/Modux/server/Manifest/init.luau # generated',
   'src/Modux/server/Modules.luau # generated',
   'src/Modux/shared/Libs.luau # generated',
-  'src/Types/client/VitalController.luau # generated',
-  'src/Types/server/VitalService.luau # generated',
+  'src/ModuxTypes/client/VitalController.luau # generated',
+  'src/ModuxTypes/server/VitalService.luau # generated',
   'src/Vital/server/VitalService.luau # yours',
 ]" />
 
-One type leaf per module of yours, at `src/Types/<side>/<Id>.luau`. The side is
+One type leaf per module of yours, at `src/ModuxTypes/<side>/<Id>.luau`. The side is
 in the path because of replication: a Controller's type has to reach the
 client, a Service's must not.
 
-To [Rogen](/en/setup/Rogen), `src/Types/` is a feature like any other — the
+To [Rogen](/en/setup/Rogen), `src/ModuxTypes/` is a feature like any other — the
 `client`, `server` and `shared` folders inside it land in the usual services.
 It **is committed**: rogen only sees a folder once it holds a `.luau`, so
 without the leaves in the repository a fresh clone's first `rogen build`
 wouldn't map it.
+
+::: warning Why `ModuxTypes` and not `Types`
+Because `Types` collides. Rogen translates `src/<Feature>/<side>` into
+`<Root>.<side>.<Feature>`, so `src/Types/shared` would land on
+`ReplicatedStorage.shared.Types` — exactly where the framework's
+`src/Shared/Types/` lives, with `Atomic`, `Occlude`, `Struct` and `Union`.
+
+Rogen doesn't complain: it descends to per-file entries and merges the two
+folders. And if a name repeats, **one of them vanishes from the project file
+with no warning**. A shared Service named `Union` would make the framework's
+`Union` type function disappear, and every
+`require(ReplicatedStorage.shared.Types.Union)` would start receiving a
+generated leaf.
+
+This was real in **0.7.0** and **0.7.1**. From **0.7.2** on the folder is
+called `ModuxTypes`, and the generator also refuses to run if any leaf folder
+shares an instance with another file in the project — for the collisions
+nobody saw coming.
+:::
 
 ::: tip Why a script for the packages
 `wally install` rewrites the `Packages/` shims from scratch, and in doing so

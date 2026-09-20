@@ -174,7 +174,7 @@ transforma `Foo/init.luau` num ModuleScript chamado `Foo` no mesmo pai onde
 
 Até a versão **0.6.11** a pasta era obrigatória, porque o `Type.luau` era
 escrito ao lado do módulo e dois módulos soltos na mesma pasta colidiriam nesse
-nome. Da **0.7.0** em diante o tipo mora em `src/Types/`, endereçado pelo ID do
+nome. Da **0.7.0** em diante o tipo mora em `src/ModuxTypes/`, endereçado pelo ID do
 módulo, e a colisão deixou de existir.
 :::
 
@@ -188,20 +188,38 @@ Estes arquivos são saída do gerador e são reescritos a cada `modux generate`:
   'src/Modux/server/Manifest/init.luau # gerado',
   'src/Modux/server/Modules.luau # gerado',
   'src/Modux/shared/Libs.luau # gerado',
-  'src/Types/client/VitalController.luau # gerado',
-  'src/Types/server/VitalService.luau # gerado',
+  'src/ModuxTypes/client/VitalController.luau # gerado',
+  'src/ModuxTypes/server/VitalService.luau # gerado',
   'src/Vital/server/VitalService.luau # seu',
 ]" />
 
-Uma folha de tipo por módulo seu, em `src/Types/<lado>/<Id>.luau`. O lado está
+Uma folha de tipo por módulo seu, em `src/ModuxTypes/<lado>/<Id>.luau`. O lado está
 no caminho por causa da replicação: o tipo de um Controller precisa chegar ao
 cliente, o de um Service não pode.
 
-`src/Types/` é uma feature como qualquer outra aos olhos do [Rogen](/setup/Rogen)
+`src/ModuxTypes/` é uma feature como qualquer outra aos olhos do [Rogen](/setup/Rogen)
 — pastas `client`, `server` e `shared` dentro dela caem nos serviços de sempre.
 Ela **vai versionada**: o rogen só enxerga uma pasta depois que ela tem `.luau`
 dentro, então sem as folhas no repositório o primeiro `rogen build` de um clone
 não a mapearia.
+
+::: warning Por que `ModuxTypes` e não `Types`
+Porque `Types` colide. O rogen traduz `src/<Feature>/<lado>` para
+`<Raiz>.<lado>.<Feature>`, então `src/Types/shared` cairia em
+`ReplicatedStorage.shared.Types` — exatamente onde mora o `src/Shared/Types/`
+do framework, com `Atomic`, `Occlude`, `Struct` e `Union`.
+
+O rogen não acusa: ele desce para entradas por arquivo e mescla as duas pastas.
+E se houver nome repetido, **uma some do project file sem aviso**. Um Service
+shared chamado `Union` faria a type function `Union` do framework desaparecer,
+e todo `require(ReplicatedStorage.shared.Types.Union)` passaria a receber uma
+folha gerada.
+
+Isso existiu de verdade nas versões **0.7.0** e **0.7.1**. Da **0.7.2** em
+diante a pasta se chama `ModuxTypes`, e o gerador ainda recusa gerar se
+qualquer pasta de folha dividir instância com outro arquivo do projeto — para
+as colisões que ninguém previu.
+:::
 
 ::: tip Por que um script para os pacotes
 `wally install` reescreve os shims de `Packages/` do zero, e com isso apaga o

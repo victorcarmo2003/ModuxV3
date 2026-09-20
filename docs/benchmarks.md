@@ -244,7 +244,7 @@ N de **cada** lado, não no total.
 
 ::: tip Refeito no modux 0.7.0: o muro não andou
 A 0.7.0 tirou a folha de tipo de junto do módulo e a levou para
-`src/Types/<lado>/<Id>.luau`. A pergunta óbvia é se isso mexeu no custo. Não
+`src/ModuxTypes/<lado>/<Id>.luau`. A pergunta óbvia é se isso mexeu no custo. Não
 mexeu — medido em A/B na mesma máquina e na mesma sessão, N=100 controllers:
 
 | modux | `analyze` | erros |

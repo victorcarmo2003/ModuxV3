@@ -223,7 +223,7 @@ com `init.luau` e os irmãos dentro — as duas formas dão a mesma instância.
 
 ## Gerado, não editar
 
-A folha de tipo de cada módulo (`src/Types/<lado>/<Id>.luau`), o `Manifest/` e
+A folha de tipo de cada módulo (`src/ModuxTypes/<lado>/<Id>.luau`), o `Manifest/` e
 o `Modules.luau` de cada lado são saída do gerador. Editar é perder na próxima
 geração.
 

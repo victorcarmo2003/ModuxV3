@@ -8,7 +8,7 @@ análise, por três peças que se encaixam.
 ### 1. O gerador lê a AST
 
 `modux generate` parseia cada módulo e escreve a **folha** dele em
-`src/Types/<lado>/<Id>.luau`. A folha exporta só a superfície pública:
+`src/ModuxTypes/<lado>/<Id>.luau`. A folha exporta só a superfície pública:
 
 ```lua
 export type Public = {

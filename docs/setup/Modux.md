@@ -5,10 +5,10 @@ Abaixo, explico sobre como funciona a estrutura do gerador de arquivos, preenchi
 O watcher lê o conteúdo de cada module e a partir deles, gera toda a estrutura de funções, parâmetros e alguns self values simples e então escreve as folhas de tipo nesta estrutura:
 <FileTree title="Estrutura gerada" :paths="[
   'src/Example/client/ExampleController.luau # seu',
-  'src/Types/client/ExampleController.luau #(auto-gerada)',
+  'src/ModuxTypes/client/ExampleController.luau #(auto-gerada)',
 ]" />
 
-A folha não fica ao lado do módulo: ela vai para `src/Types/<lado>/<Id>.luau`,
+A folha não fica ao lado do módulo: ela vai para `src/ModuxTypes/<lado>/<Id>.luau`,
 endereçada pelo ID. É por isso que o módulo pode ser um arquivo solto — até a
 **0.6.11** a pasta era obrigatória só para dois módulos vizinhos não brigarem
 pelo mesmo `Type.luau`.
@@ -39,7 +39,7 @@ Parseia por todos os modules, controllers e services registrados e gera o type d
 ```sh
 modux generate
 #OUTPUT:
-[modux] leaf: src/Types/server/PlayerService.luau
+[modux] leaf: src/ModuxTypes/server/PlayerService.luau
 [modux] manifest server: src/Modux/server/Manifest/init.luau (6 modules)
 [modux] modules server: src/Modux/server/Modules.luau
 [modux] libs: src/Modux/shared/Libs.luau
@@ -74,7 +74,7 @@ comando para o CI.
 ```sh
 modux check
 #OUTPUT:
-stale: src/Types/server/PlayerService.luau
+stale: src/ModuxTypes/server/PlayerService.luau
 modux: 1 file(s) out of date. Run `modux generate`.
 ```
 ### > modux list
@@ -114,7 +114,7 @@ Pasta que guarda outro arquivo **não** é achatada — aquilo é coisa sua. E o
 desatualizada do tipo que ninguém mais escreve.
 
 ::: warning Os dois passos depois do fix não são opcionais
-O `rogen` deriva o project file da estrutura de pastas e só enxerga `src/Types/`
+O `rogen` deriva o project file da estrutura de pastas e só enxerga `src/ModuxTypes/`
 depois que existe um `.luau` lá dentro. Então a primeira migração precisa de
 `modux generate` (que escreve as folhas) e `rogen build` **de novo** (que as
 mapeia). Quem clona o template não passa por isso, porque lá as folhas já vêm

@@ -75,7 +75,7 @@ The rule is about children, not intent: a folder whose only content is
 Up to 0.6.11 that was an unpleasant accidental dependency — the module lived
 in a folder, and that folder only survived because the generated `Type.luau`
 was sitting next to it for company. The shape on disk was being held up by a
-generated file. With the type in `src/Types/`, the loose file became the
+generated file. With the type in `src/ModuxTypes/`, the loose file became the
 expected shape, and SyncTeam's normalization simply agrees with it.
 
 A module holding files of its own — the template's `ProfileService`, with its

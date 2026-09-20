@@ -22,7 +22,7 @@ Then open the rokit.toml file and paste:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/ModuxWatcher@0.7.1"
+modux = "victorcarmo2003/ModuxWatcher@0.7.2"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -56,13 +56,13 @@ rojo serve        # connects to Studio
 
 ::: warning Only on the project's first generation
 That repeated pair isn't a mistake. Since modux **0.7.0** the type leaves live
-in `src/Types/`, and `rogen` derives `default.project.json` from the folder
+in `src/ModuxTypes/`, and `rogen` derives `default.project.json` from the folder
 structure — it only sees a folder once that folder holds a `.luau`. In a
-project where `src/Types/` doesn't exist yet, the first `modux generate`
+project where `src/ModuxTypes/` doesn't exist yet, the first `modux generate`
 writes the leaves but finds no DataModel address for them:
 
 ```
-modux: path outside default.project.json: src/Types/client/MyController.luau
+modux: path outside default.project.json: src/ModuxTypes/client/MyController.luau
 ```
 
 The next `rogen build` maps them, and the second `modux generate` closes it.

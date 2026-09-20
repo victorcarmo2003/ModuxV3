@@ -22,7 +22,7 @@ Em seguida abrir o arquivo rokit.toml, colar:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/ModuxWatcher@0.7.1"
+modux = "victorcarmo2003/ModuxWatcher@0.7.2"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -55,14 +55,14 @@ rojo serve        # conecta no Studio
 
 ::: warning Só na primeira geração do projeto
 Aquele par repetido não é engano. Desde o modux **0.7.0** as folhas de tipo
-moram em `src/Types/`, e o `rogen` deriva o `default.project.json` da
+moram em `src/ModuxTypes/`, e o `rogen` deriva o `default.project.json` da
 estrutura de pastas — ele só enxerga uma pasta depois que ela tem `.luau`
-dentro. Num projeto onde `src/Types/` ainda não existe, o primeiro
+dentro. Num projeto onde `src/ModuxTypes/` ainda não existe, o primeiro
 `modux generate` escreve as folhas mas não acha endereço de DataModel para
 elas:
 
 ```
-modux: path outside default.project.json: src/Types/client/MeuController.luau
+modux: path outside default.project.json: src/ModuxTypes/client/MeuController.luau
 ```
 
 O `rogen build` seguinte mapeia, e o segundo `modux generate` fecha. Da
