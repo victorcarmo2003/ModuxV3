@@ -89,6 +89,57 @@ So the trade is this, and it is direct: **V2 is cheap to analyze because you
 write the annotation; V3 is expensive to analyze because it writes it for you.**
 :::
 
+### Which column real V2 lives in
+
+The table above compares two V2 columns, and it's worth knowing which one
+describes code that exists. Measured on a real V2 game on disk, 142 `.luau`
+files under `src/`, of which 53 are the author's and 89 are the framework:
+
+| | |
+|---|---:|
+| declared modules | 31 |
+| declarations **with** a type annotation | **0** |
+| author's files with `--!strict` | 8 of 53 |
+| author's files with no mode at all | 45 of 53 |
+
+No annotation, anywhere. And `ControllerFn` is
+`(id: string, mode: Mode?) -> any` (`src/shared/Modux/Types.luau`), so `self`
+is worth `any` in all 31.
+
+The test that settles it, on a copy of the project: I replaced a call with
+`self.FieldThatDoesNotExist:MadeUpMethod()` and, alongside it, added a control
+error that depends on no `self` at all — `local control: number = "this is a string"`.
+
+```
+TypeError total: 2384   (before: 2384)
+HitController.luau: (nothing)
+```
+
+Neither was reported, because the file doesn't declare `--!strict`.
+
+::: danger The 36× comparison is generous to V2
+The pattern the "V2, N sites" column measures — `local C: T.ModX = M.Controller("ModX")`
+with `--!strict` — **does not appear once** in that project. Real V2 is in the
+"1 site" column, and even that one is measured in strict, which the project
+barely uses.
+
+The sentence above ("V2 is cheap because you write the annotation") is still
+right, but practice is harsher: **you don't write it**. V2 is cheap because it
+isn't checking. The project carries 2,384 standing `TypeError`s and a
+`number = "string"` nobody sees.
+
+This doesn't absolve V3. The 19.5 s and the wall between 100 and 150 are real
+and reproduced. It only bounds what the comparison says: it's V3 typing
+everything against a V2 that, as it's actually written, types almost nothing.
+:::
+
+::: warning Don't compare this with the synthetic numbers
+Analyzing that whole project takes 9.8 s, and that number goes into **no**
+table on this page. It's 142 files with a network stack, `Instance` types and
+89 framework files — a different load from everything being compared here. It
+only says the run happened and that the injected errors didn't show up.
+:::
+
 ### Autocomplete: neither one is felt
 
 Warm median of `textDocument/completion`, 7 calls, first one discarded:

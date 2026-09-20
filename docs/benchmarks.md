@@ -88,6 +88,56 @@ Então a troca é essa, e é direta: **o V2 é barato de analisar porque você
 escreve a anotação; o V3 é caro de analisar porque ele escreve por você.**
 :::
 
+### Em qual coluna o V2 real vive
+
+A tabela acima compara duas colunas de V2, e vale saber qual delas descreve
+código que existe. Medido num jogo V2 real em disco, 142 arquivos `.luau` sob
+`src/`, dos quais 53 são do autor e 89 são o framework:
+
+| | |
+|---|---:|
+| módulos declarados | 31 |
+| declarações **com** anotação de tipo | **0** |
+| arquivos do autor com `--!strict` | 8 de 53 |
+| arquivos do autor sem modo nenhum | 45 de 53 |
+
+Nenhuma anotação, em lugar nenhum. E `ControllerFn` é
+`(id: string, mode: Mode?) -> any` (`src/shared/Modux/Types.luau`), então o
+`self` vale `any` nos 31.
+
+O teste que fecha a questão, numa cópia do projeto: troquei uma chamada por
+`self.CampoQueNaoExiste:MetodoInventado()` e, junto, pus um erro de controle
+que não depende de `self` nenhum — `local controle: number = "isso e string"`.
+
+```
+TypeError total: 2384   (antes: 2384)
+HitController.luau: (nada)
+```
+
+Nenhum dos dois foi reportado, porque o arquivo não declara `--!strict`.
+
+::: danger A comparação de 36× é generosa com o V2
+O padrão que a coluna "V2, N sítios" mede — `local C: T.ModX = M.Controller("ModX")`
+com `--!strict` — **não aparece uma única vez** nesse projeto. O V2 real está na
+coluna "1 sítio", e mesmo essa é medida em strict, que o projeto quase não usa.
+
+A frase acima ("o V2 é barato porque você anota") continua certa, mas a prática
+é mais dura: **você não anota**. O V2 é barato porque não está verificando. O
+projeto carrega 2 384 `TypeError` em pé e um `number = "string"` que ninguém vê.
+
+Isso não absolve o V3. Os 19,5 s e o muro entre 100 e 150 são reais e
+reproduzidos. Só delimita o que a comparação diz: é o V3 tipando tudo contra um
+V2 que, como de fato é escrito, tipa quase nada.
+:::
+
+::: warning Não compare com os números sintéticos
+Analisar esse projeto inteiro leva 9,8 s, e esse número **não** entra em
+nenhuma tabela desta página. São 142 arquivos com stack de rede, tipos de
+`Instance` e 89 arquivos de framework — carga diferente de tudo que está sendo
+comparado aqui. Serve só para dizer que rodou e que os erros injetados não
+apareceram.
+:::
+
 ### Autocomplete: nenhum dos dois é sentido
 
 Mediana quente de `textDocument/completion`, 7 chamadas, descartando a primeira:
