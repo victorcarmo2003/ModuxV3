@@ -22,7 +22,7 @@ Em seguida abrir o arquivo rokit.toml, colar:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/ModuxWatcher@0.7.2"
+modux = "victorcarmo2003/ModuxWatcher@0.7.3"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -71,8 +71,17 @@ segunda vez em diante uma passada basta.
 **Clonando o template, isso nunca acontece** — lá as folhas já vêm
 versionadas, então o primeiro `rogen build` já enxerga a pasta.
 
-E nos **watchers** também não acontece: `rogen watch` e `modux watch` rodam
-juntos, então o mapa se completa sozinho no tick seguinte.
+Nos **watchers** (`CTRL + SHIFT + B`) o cold start se resolve sozinho, mas
+vale saber como: `rogen watch` e `modux watch` sobem juntos, e quem chega
+primeiro é corrida. Se o build inicial do rogen rodar depois de o modux
+escrever as folhas, fecha na largada. Se rodar antes, o modux imprime
+`waiting for rogen to pick up the leaves folder` e fica esperando — o teu
+primeiro save reconstrói o project file, o modux relê o mapa e fecha ali.
+
+Em nenhum dos dois o watcher morre. Até a **0.7.2** morria: a primeira
+passada saía com `path outside default.project.json` antes de o loop
+começar, e a tarefa do VS Code fechava sozinha sem explicar nada. Corrigido
+na **0.7.3**.
 :::
 
 Durante o desenvolvimento, os dois watchers substituem os dois `build`/`generate`:
