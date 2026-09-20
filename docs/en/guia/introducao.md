@@ -83,7 +83,7 @@ end
   src="/requireExample.gif"
   alt="autocomplete resolving the self"
   title="Live demo"
-  caption="Yes! One module can require another (Dependency Injection)"
+  caption="Yes! Modules can depend on each other (Dependency Injection)"
   width="700px"
 />
 
@@ -91,6 +91,41 @@ The biggest advantage is this: you didn't write a single type. Inside
 Dependencies > `Skeleton` it shows you exactly which methods exist and which
 parameters they take. Try to require something that doesn't exist and it calls
 that out too!
+
+#### They can require each other
+
+This is real dependency injection, and here's where the difference shows:
+**A can require B while B requires A**. Both stay typed, and there's no cycle.
+
+```lua
+const AService = Modux.Service("AService", { Require = { "BService" } })
+function AService:Ping(n: number): number
+	return self.Dependencies.BService:Pong(n)
+end
+```
+
+```lua
+const BService = Modux.Service("BService", { Require = { "AService" } })
+function BService:Bounce(n: number): number
+	return self.Dependencies.AService:Ping(n)
+end
+```
+
+With a plain `require` that would be a cycle — each file asking for the other
+before it exists. Here it isn't, for two separate reasons:
+
+**At runtime**, you never require the other module. The loader comes up in two
+phases and hands you the modules already built, inside `self.Dependencies`.
+The module list returns Instances, never `require`. See
+[Lifecycle](/en/arquitetura/ciclo-de-vida).
+
+**In the typing**, each module has its own type leaf, and the leaf carries
+only that module's public surface — it doesn't know the Manifest. The Manifest
+is what stitches the leaves together, and nothing stitches back. See
+[How the typing works](/en/tipagem/).
+
+Measured on the template: two Services requiring each other, `luau-analyze`
+reporting **0 errors and 0 cycles**.
 
 The trick: a generator reads your modules and writes one type leaf per module.
 The framework stitches those leaves together with Luau type functions. How that

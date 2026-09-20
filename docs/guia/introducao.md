@@ -79,13 +79,48 @@ end
   src="/requireExample.gif"
   alt="autocomplete resolvendo o self"
   title="Demonstração prática"
-  caption="Sim! Um módulo pode requerer o outro (Dependency Injection)"
+  caption="Sim! Os modules podem ter dependência mútua (Dependency Injection)"
   width="700px"
 />
 
 A maior vantagem é que você não escreveu tipo nenhum. Dentro de `Dependencies >
 Skeleton` ele mostra exatamente quais métodos existem e quais parâmetros cada um
 pede. Declarar em `Require` um módulo que não existe também acusa erro.
+
+#### Eles podem se requerer mutuamente
+
+Isso é injeção de dependência de verdade, e a diferença aparece aqui: **A pode
+requerer B enquanto B requer A**. Os dois continuam tipados, e não há ciclo.
+
+```lua
+const AService = Modux.Service("AService", { Require = { "BService" } })
+function AService:Ping(n: number): number
+	return self.Dependencies.BService:Pong(n)
+end
+```
+
+```lua
+const BService = Modux.Service("BService", { Require = { "AService" } })
+function BService:Rebote(n: number): number
+	return self.Dependencies.AService:Ping(n)
+end
+```
+
+Com `require` comum isso seria um ciclo — cada arquivo pedindo o outro antes
+de existir. Aqui não é, e por dois motivos distintos:
+
+**No runtime**, você nunca requer o outro módulo. O loader sobe em duas fases
+e entrega os módulos já construídos dentro de `self.Dependencies`. A lista de
+módulos devolve Instances, nunca `require`. Ver
+[Ciclo de vida](/arquitetura/ciclo-de-vida).
+
+**Na tipagem**, cada módulo tem a própria folha de tipo, e a folha carrega só
+a superfície pública daquele módulo — ela não conhece o Manifest. Quem junta
+as folhas é o Manifest, e ninguém junta de volta. Ver
+[Como a tipagem funciona](/tipagem/).
+
+Medido no template: dois Services se requerendo, `luau-analyze` com **0 erro e
+0 ciclo**.
 
 O truque: um gerador lê os seus módulos e escreve uma folha de tipo por módulo.
 O framework junta essas folhas com type functions do Luau. Como isso funciona
