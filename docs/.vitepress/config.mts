@@ -19,6 +19,7 @@ const pt = {
 			{ text: "Arquitetura", link: "/arquitetura/" },
 			{ text: "Tipagem", link: "/tipagem/" },
 			{ text: "Setup", link: "/setup/" },
+			{ text: "Benchmarks", link: "/benchmarks" },
 		],
 
 		sidebar: [
@@ -68,6 +69,10 @@ const pt = {
 					{ text: "SyncTeam", link: "/setup/SyncTeam" },
 				],
 			},
+			{
+				text: "Medições",
+				items: [{ text: "Benchmarks", link: "/benchmarks" }],
+			},
 		],
 
 		outline: { level: [2, 3] as [number, number], label: "Nesta página" },
@@ -99,6 +104,7 @@ const en = {
 			{ text: "Architecture", link: "/en/arquitetura/" },
 			{ text: "Typing", link: "/en/tipagem/" },
 			{ text: "Setup", link: "/en/setup/" },
+			{ text: "Benchmarks", link: "/en/benchmarks" },
 		],
 
 		sidebar: [
@@ -147,6 +153,10 @@ const en = {
 					{ text: "Azul", link: "/en/setup/Azul" },
 					{ text: "SyncTeam", link: "/en/setup/SyncTeam" },
 				],
+			},
+			{
+				text: "Measurements",
+				items: [{ text: "Benchmarks", link: "/en/benchmarks" }],
 			},
 		],
 

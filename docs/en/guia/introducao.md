@@ -75,7 +75,7 @@ And in another module using it:
 const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton" } })
 
 function Zombie:Heal(amount: number, target: Instance)
-	self.Dependencies.Skeleton:ShotArrow(target) -- 100% typed
+	self.Dependencies.Skeleton:ShootArrow(target) -- typed, and you wrote none of it
 end
 ```
 :::
@@ -145,31 +145,38 @@ The framework's pieces — Controller, Service, Component, and how they wire
 together — are in [Architecture](/en/arquitetura/).
 
 ## Known limits
-Somewhere between 100 and 150 modules **per side**, the solver starts answering
-`Code is too complex to typecheck`. Since Controller and Service live in separate
-Manifests, splitting by side nearly triples the headroom. Five ways of
-reorganizing the types were measured and none beat the current design.
+
+**Scaling ceiling.** Somewhere between 100 and 150 modules **per side**, the
+solver starts answering `Code is too complex to typecheck`. Since Controller and
+Service live in separate Manifests, splitting by side nearly triples the
+headroom. Five ways of reorganizing the types were measured and none that is
+**usable** beat the current design — see
+[Benchmarks](/en/benchmarks#where-the-cost-lives).
 
 **No networking built in.** The framework stops you from crossing sides, but it
 doesn't hand you the bridge. Networking comes in as a lib in
 [`src/Libs`](/en/arquitetura/libs), not as part of the core.
 
 ### Benchmark
-Numbers measured in this repository, not estimated:
+Measured, not estimated. The method, the environment and the full tables are on
+[Benchmarks](/en/benchmarks) — including the comparison against Modux V2, where
+the current design **loses** on analysis time.
 
 | | |
 |---|---|
-| autocomplete, 18 modules | 18 ms after each keystroke |
-| framework overhead per component, per frame | 0.21 µs |
-| 1000 components with `OnTick` every frame | 1.3% of the 60 fps budget |
-| going through `self.Dependencies.X` on a call | +8.8 ns, ~0 if hoisted to a local |
-| Modux's own work at boot | 0.36 ms (the modules' `require` is ~88%) |
+| autocomplete, warm median at 100 modules | 0.9 ms |
+| project `analyze`, 100 modules on one side | 19.5 s |
+| the same 100 split between client and server | 9.1 s |
+| generated surface per module, against V2 | 3.9× smaller |
+| overhead per component, per frame (runtime) | 0.21 µs |
 
-The framework isn't the bottleneck in anything that could be measured.
+What costs is the batch `analyze`, which runs once per commit. While typing,
+none of it is felt.
 
 ### Parser
-The generator can't parse 100% of the libs, mostly in the case of functions. When
-that happens, a `::` cast is all it takes to get it onto the self automatically.
+The generator can't parse every lib, mostly when the value comes out of a
+function call. When that happens, a `::` cast is all it takes to get the field
+onto the self, typed.
 
 ::: demo
 ```lua
