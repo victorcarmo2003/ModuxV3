@@ -2,7 +2,7 @@
 Componentes são unilaterais para server e para client.
 
 O Componente é ligado a uma `Instance` via CollectionService, e existe um por
-instância tagueada. Sem `Tag` declarada, a tag é o próprio ID.1
+instância tagueada. Sem `Tag` declarada, a tag é o próprio ID.
 
 ```lua
 const Highlight = Modux.Component("Highlight", { Require = { "Render" } })
@@ -12,7 +12,7 @@ function Highlight:TurnOn()
 end
 
 Highlight:OnDestroy(function(self)
-	self:Destroy()
+	self.Instance.Color = Color3.new(1, 1, 1)   -- solta o que TurnOn tomou
 end)
 
 return Highlight

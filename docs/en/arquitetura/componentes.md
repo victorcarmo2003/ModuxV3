@@ -2,7 +2,7 @@
 Components are one-sided, for server and for client.
 
 A Component is bound to an `Instance` through CollectionService, and there's one
-per tagged instance. With no `Tag` declared, the tag is the ID itself.1
+per tagged instance. With no `Tag` declared, the tag is the ID itself.
 
 ```lua
 const Highlight = Modux.Component("Highlight", { Require = { "Render" } })
@@ -12,7 +12,7 @@ function Highlight:TurnOn()
 end
 
 Highlight:OnDestroy(function(self)
-	self:Destroy()
+	self.Instance.Color = Color3.new(1, 1, 1)   -- release what TurnOn took
 end)
 
 return Highlight
