@@ -22,7 +22,7 @@ Then open the rokit.toml file and paste:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/modux@0.7.0"
+modux = "victorcarmo2003/ModuxWatcher@0.7.0"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -126,9 +126,20 @@ Pins each tool's version in `rokit.toml`, one per entry.
 
 ```sh
 rokit install
-rokit add victorcarmo2003/modux
-rokit update victorcarmo2003/modux
+rokit add victorcarmo2003/ModuxWatcher
+rokit update victorcarmo2003/ModuxWatcher
 ```
+
+::: warning Rokit asks for trust once per tool
+The first time it refuses with `has not been marked as trusted`. Just run
+`rokit add` again in an interactive terminal and accept, or
+`rokit trust victorcarmo2003/ModuxWatcher` before `rokit install`.
+
+If you're coming from **0.6.x**, this happens again even though you already
+accepted once: the repository was called `victorcarmo2003/modux` up to 0.7.0,
+and Rokit treats the new name as a **different** tool — it doesn't follow
+GitHub's redirect.
+:::
 
 ::: tip
 `rokit install --force` rewrites **every** binary, and fails if one of them is

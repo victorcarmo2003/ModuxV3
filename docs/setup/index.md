@@ -22,7 +22,7 @@ Em seguida abrir o arquivo rokit.toml, colar:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/modux@0.7.0"
+modux = "victorcarmo2003/ModuxWatcher@0.7.0"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -126,9 +126,20 @@ Fixa a versão de cada ferramenta no `rokit.toml`, uma por entrada.
 
 ```sh
 rokit install
-rokit add victorcarmo2003/modux
-rokit update victorcarmo2003/modux
+rokit add victorcarmo2003/ModuxWatcher
+rokit update victorcarmo2003/ModuxWatcher
 ```
+
+::: warning O Rokit pede confiança uma vez por ferramenta
+Na primeira vez ele recusa e diz `has not been marked as trusted`. É só rodar
+o `rokit add` de novo num terminal interativo e aceitar, ou
+`rokit trust victorcarmo2003/ModuxWatcher` antes do `rokit install`.
+
+Se você vinha da **0.6.x**, isso acontece de novo mesmo já tendo aceitado
+antes: o repositório se chamava `victorcarmo2003/modux` até a 0.7.0, e o Rokit
+trata o nome novo como uma ferramenta **diferente** — ele não segue o
+redirecionamento do GitHub.
+:::
 
 ::: tip
 `rokit install --force` reescreve **todos** os binários, e falha se algum
