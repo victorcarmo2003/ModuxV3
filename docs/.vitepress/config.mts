@@ -20,6 +20,7 @@ const pt = {
 			{ text: "Tipagem", link: "/tipagem/" },
 			{ text: "Setup", link: "/setup/" },
 			{ text: "Benchmarks", link: "/benchmarks" },
+			{ text: "Logs", link: "/logs/" },
 		],
 
 		sidebar: [
@@ -105,6 +106,7 @@ const en = {
 			{ text: "Typing", link: "/en/tipagem/" },
 			{ text: "Setup", link: "/en/setup/" },
 			{ text: "Benchmarks", link: "/en/benchmarks" },
+			{ text: "Logs", link: "/en/logs/" },
 		],
 
 		sidebar: [
