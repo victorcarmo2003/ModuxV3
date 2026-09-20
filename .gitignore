@@ -8,3 +8,5 @@ docs/node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 /probe/
+.bench_estilos/
+.bench_aside/
