@@ -163,14 +163,26 @@ folder goes to StarterPlayerScripts, `server` to ServerScriptService, and
 everything else is shared.
 
 <FileTree title="one feature" :paths="[
-  'src/Vital/client/VitalController/init.luau',
-  'src/Vital/server/VitalService/init.luau',
-  'src/Vital/server/Vital/init.luau # component',
+  'src/Vital/client/VitalController.luau',
+  'src/Vital/server/VitalService.luau',
+  'src/Vital/server/Vital.luau # component',
 ]" />
 
-A module is a folder with an `init.luau`, never a loose file: the generator
-writes `Type.luau` next to the module, and two modules in the same folder would
-collide on that name.
+A module is **a file**. Creating a new Controller means creating a file, and
+nothing else.
+
+::: tip A folder works too
+If a module needs files of its own, it becomes a folder with `init.luau` and
+the siblings inside — that's what the template's `ProfileService` does with its
+`Template.luau`. Both shapes produce exactly the **same instance**: Rojo turns
+`Foo/init.luau` into a ModuleScript named `Foo`, in the same parent where
+`Foo.luau` would have been born. No require changes.
+
+Up to **0.6.11** the folder was mandatory, because `Type.luau` was written next
+to the module and two loose modules in the same folder would collide on that
+name. From **0.7.0** on the type lives in `src/Types/`, addressed by the
+module's ID, and the collision stopped existing.
+:::
 
 ## Generated, don't edit
 
@@ -182,11 +194,20 @@ Four files are generator output and get rewritten on every `modux generate`:
   'src/Modux/server/Manifest/init.luau # generated',
   'src/Modux/server/Modules.luau # generated',
   'src/Modux/shared/Libs.luau # generated',
-  'src/Vital/server/VitalService/init.luau # yours',
-  'src/Vital/server/VitalService/Type.luau # generated',
+  'src/Types/client/VitalController.luau # generated',
+  'src/Types/server/VitalService.luau # generated',
+  'src/Vital/server/VitalService.luau # yours',
 ]" />
 
-One `Type.luau` per module of yours, right beside it.
+One type leaf per module of yours, at `src/Types/<side>/<Id>.luau`. The side is
+in the path because of replication: a Controller's type has to reach the
+client, a Service's must not.
+
+To [Rogen](/en/setup/Rogen), `src/Types/` is a feature like any other — the
+`client`, `server` and `shared` folders inside it land in the usual services.
+It **is committed**: rogen only sees a folder once it holds a `.luau`, so
+without the leaves in the repository a fresh clone's first `rogen build`
+wouldn't map it.
 
 ::: tip Why a script for the packages
 `wally install` rewrites the `Packages/` shims from scratch, and in doing so
