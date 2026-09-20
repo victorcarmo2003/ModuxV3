@@ -174,7 +174,7 @@ changing later is a migration.
 
 ### And the typing, with two people?
 
-The natural question: if your teammate edits a module, does the `Type.luau`
+The natural question: if your teammate edits a module, does the type leaf
 arrive ready on your disk, or does your generator have to redo it?
 
 **It arrives ready, and your generator agrees with it.** The generator is
@@ -184,7 +184,7 @@ reaches the same result, sees the file is already correct and writes nothing.
 No loop, no write war.
 
 ::: warning The Manifest can flicker
-`Type.luau` is per module, but the Manifest is **one file**, shared, listing
+The leaf is per module, but the Manifest is **one file**, shared, listing
 every module on that side.
 
 If the other person's modux runs in the one-second window between your new

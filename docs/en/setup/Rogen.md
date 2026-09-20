@@ -9,16 +9,16 @@ rogen watch     # generates continuously
 It generates `default.project.json` from the folder structure, with a
 feature-based architecture: 
 <FileTree :paths="[
-  'src/Feature/server/FeatureService/init.luau',
-  'src/Feature/client/FeatureController/init.luau',
-  'src/Feature/shared/FeatureSettings/init.luau',
+  'src/Feature/server/FeatureService.luau',
+  'src/Feature/client/FeatureController.luau',
+  'src/Feature/shared/FeatureSettings.luau',
 ]" /> 
 
 Which arrives as:
 <FileTree :paths="[
-  'Game/ServerScriptService/server/FeatureService/init.luau',
-  'Game/StarterPlayer/StarterPlayerScripts/client/FeatureController/init.luau',
-  'Game/ReplicatedStorage/shared/FeatureSettings/init.luau',
+  'Game/ServerScriptService/server/FeatureService',
+  'Game/StarterPlayer/StarterPlayerScripts/client/FeatureController',
+  'Game/ReplicatedStorage/shared/FeatureSettings',
 ]"/> 
 
 The configuration lives in `.rogen.json`. Entries written by hand in

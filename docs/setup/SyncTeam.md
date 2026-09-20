@@ -62,16 +62,25 @@ instância ↔ disco dele é este, e é o mesmo que o `rogen` já escreve:
 | LocalScript sem filhos | `Nome.client.luau` |
 | LocalScript com filhos | `Nome/init.client.luau` |
 
-Um módulo Modux é sempre uma pasta com `init.luau` **e** `Type.luau` ao lado,
-então cai na linha "com filhos" e a pasta se mantém. O `src/Feature/{client,server}`
-continua existindo, e o `default.project.json` do `rogen` continua sendo a
-fonte do mapeamento.
+Desde o modux **0.7.0** um módulo Modux é um arquivo solto, então cai na
+primeira linha da tabela: `Nome.luau` no disco, `Nome` no DataModel, sem
+normalização nenhuma no meio. O `src/Feature/{client,server}` continua
+existindo, e o `default.project.json` do `rogen` continua sendo a fonte do
+mapeamento.
 
-::: warning Um módulo sozinho vira arquivo solto
+::: tip A normalização deixou de ser um risco
 A regra é sobre filhos, não sobre intenção: uma pasta cujo único conteúdo é
-`init.luau` é normalizada para `Nome.luau`. Em código Modux isso não acontece,
-porque o `Type.luau` está sempre lá — mas se você criar uma pasta com só o
-`init.luau` à mão, ela vai achatar.
+`init.luau` é normalizada para `Nome.luau`.
+
+Até a 0.6.11 isso era uma dependência acidental desagradável — o módulo vivia
+numa pasta, e essa pasta só sobrevivia porque o `Type.luau` gerado estava lá
+do lado fazendo companhia. A forma no disco estava sendo sustentada por um
+arquivo gerado. Com o tipo em `src/Types/`, o arquivo solto virou a forma
+esperada, e a normalização do SyncTeam simplesmente concorda com ela.
+
+Módulo que guarda arquivo próprio — o `ProfileService` do template, com o seu
+`Template.luau` — continua sendo pasta e cai na linha "com filhos". Também sem
+normalização, porque tem irmão de verdade.
 :::
 
 ### O sourcemap continua sendo do luau-lsp

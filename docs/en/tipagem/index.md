@@ -7,8 +7,8 @@ time, by three pieces that fit together.
 
 ### 1. The generator reads the AST
 
-`modux generate` parses each module and writes a `Type.luau` next to it — the
-**leaf**. The leaf exports only the public surface:
+`modux generate` parses each module and writes its **leaf** to
+`src/Types/<side>/<Id>.luau`. The leaf exports only the public surface:
 
 ```lua
 export type Public = {

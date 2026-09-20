@@ -63,16 +63,24 @@ instance ↔ disk mapping is this one, the same one `rogen` already writes:
 | LocalScript without children | `Name.client.luau` |
 | LocalScript with children | `Name/init.client.luau` |
 
-A Modux module is always a folder with `init.luau` **and** `Type.luau` next to
-it, so it lands on the "with children" row and the folder survives.
-`src/Feature/{client,server}` stays exactly as it is, and `rogen`'s
-`default.project.json` stays the source of the mapping.
+Since modux **0.7.0** a Modux module is a loose file, so it lands on the first
+row of the table: `Name.luau` on disk, `Name` in the DataModel, no
+normalization in between. `src/Feature/{client,server}` stays exactly as it
+is, and `rogen`'s `default.project.json` stays the source of the mapping.
 
-::: warning A lone module flattens into a file
+::: tip Normalization stopped being a risk
 The rule is about children, not intent: a folder whose only content is
-`init.luau` gets normalized to `Name.luau`. This never happens in Modux code,
-because `Type.luau` is always there — but if you hand-create a folder holding
-only `init.luau`, it will flatten.
+`init.luau` gets normalized to `Name.luau`.
+
+Up to 0.6.11 that was an unpleasant accidental dependency — the module lived
+in a folder, and that folder only survived because the generated `Type.luau`
+was sitting next to it for company. The shape on disk was being held up by a
+generated file. With the type in `src/Types/`, the loose file became the
+expected shape, and SyncTeam's normalization simply agrees with it.
+
+A module holding files of its own — the template's `ProfileService`, with its
+`Template.luau` — stays a folder and lands on the "with children" row. No
+normalization there either, because it has a real sibling.
 :::
 
 ### The sourcemap still belongs to luau-lsp

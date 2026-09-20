@@ -40,7 +40,7 @@ type ServiceProps = {
 Any folder under `src/` that has `server` in its path:
 
 <FileTree :paths="[
-  'src/Profile/server/ProfileService/init.luau',
+  'src/Profile/server/ProfileService.luau',
   'src/Profile/server/ProfileService/Template.luau # helper',
 ]" />
 
