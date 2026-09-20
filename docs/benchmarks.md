@@ -19,11 +19,10 @@ empatados e a medição não diz nada.
 sequência paga cache frio de disco. A média anda com esse outlier; a mediana
 não. O número de rodadas está escrito em cada tabela.
 
-**Carga igualada.** Comparar o projeto V2 real com o V3 real seria comparar dois
-jogos diferentes. Os projetos comparados aqui são sintéticos e recebem a
-**mesma** superfície compartilhada, a mesma contagem de módulos, os mesmos
-métodos e as mesmas travessias entre módulos. O que muda é só como o tipo chega
-em quem escreve.
+**Carga igualada.** Onde duas variantes de tipagem são comparadas entre si, os
+projetos são sintéticos e recebem a **mesma** superfície compartilhada, a mesma
+contagem de módulos, os mesmos métodos e as mesmas travessias entre módulos. O
+que muda é só como o tipo chega em quem escreve.
 
 **Sítios de declaração.** É a variável que mais importa e a mais fácil de
 errar. Um projeto com N módulos tem N lugares onde o `self` é construído, não
@@ -41,126 +40,134 @@ um. Uma medição com um sítio só mede o custo errado por um fator de N.
 | Python | 3.12.10 |
 | data | 2026-09-20 |
 
-## V2 contra V3: como o custo de análise escala
+## Por que o `analyze` demora
 
-Quatro estilos, todos com `--!strict`, todos com N sítios de declaração exceto
-onde marcado. Mediana de 3 rodadas.
+Medido no [template](https://github.com/victorcarmo2003/ModuxTemplate), que é
+um projeto de verdade: 11 módulos, 61 arquivos `.luau`. Mediana de 3 rodadas,
+tempo de relógio do processo inteiro.
 
-| N | Luau puro | V2, 1 sítio | V2, N sítios | V3, N sítios |
-|---:|---:|---:|---:|---:|
-| 10 | 31 ms | 94 ms | 42 ms | **193 ms** |
-| 25 | 67 ms | 110 ms | 299 ms | **537 ms** |
-| 50 | 53 ms | 166 ms | 239 ms | **2 079 ms** |
-| 100 | 172 ms | 319 ms | 542 ms | **19 546 ms** |
-| 150 † | — | — | 2 859 ms | **80 384 ms** |
-| 200 † | — | — | 4 005 ms | **151 146 ms** |
+| o que foi analisado | arquivos | tempo |
+|---|---:|---:|
+| um arquivo vazio | 1 | 1 601 ms |
+| uma folha de tipo | 1 | 3 331 ms |
+| um módulo | 1 | 3 439 ms |
+| só as folhas | 21 | 3 474 ms |
+| só os módulos | 22 | 5 443 ms |
+| **o projeto inteiro** | **61** | **5 599 ms** |
 
-Zero erro em todas as células até N=100, nas quatro colunas. Depois disso só o
-V3 quebra:
+Dá para separar os 5,6 s em quatro pedaços, e nenhum deles é o que se imagina:
 
-| N | erros do V3 | erros do V2 |
-|---:|---|---|
-| 150 | 26, todos `Code is too complex to typecheck` | 0 |
-| 200 | 105, todos `Code is too complex to typecheck` | 0 |
+| pedaço | custo | o que é |
+|---|---:|---|
+| definitions da Roblox | 1 601 ms | 29% — não tem nada a ver com o seu projeto |
+| o primeiro arquivo | ~1 800 ms | 32% — montar o grafo de tipos do framework, uma vez |
+| os outros 21 módulos | ~2 000 ms | 36% — ~95 ms cada |
+| todo o resto | ~160 ms | 3% — 39 arquivos, ~4 ms cada |
 
-† rodada única, não mediana — cada célula dessas leva de um a três minutos.
+**Quase um terço nunca foi o seu projeto.** Carregar o
+`globalTypes.PluginSecurity.d.luau` custa 1,6 s num arquivo vazio, e custa os
+mesmos 1,6 s num projeto de 200 módulos. Toda tabela desta página que fala em
+"líquido" está com essa constante descontada; sem descontar, tudo parece
+empatado.
 
-**O V2 é mais barato de analisar, e por bastante.** A 100 módulos o V3 custa 36
-vezes o V2 com o mesmo número de sítios. E a curva não é a mesma: dobrar N de 50
-para 100 multiplica o V2 por 2,3 e o V3 por **9,4** — algo perto de N³.
+**Outro terço é pago uma vez só.** Ir de um arquivo vazio para *qualquer* um
+arquivo do projeto custa ~1,8 s. Isso é o analisador resolvendo o Manifest, as
+folhas que ele requer e a cadeia do framework. O segundo módulo não paga isso
+de novo.
 
-A razão é estrutural e já estava documentada: cada sítio de declaração do V3
-resolve o Manifest inteiro do seu lado. Com N módulos e um Manifest de N
-entradas, isso é N × N por construção. O V2 não tem esse problema porque o tipo
-dele não vem da chamada — vem de um alias que o gerador escreve, e um alias
-resolve uma vez.
+**As folhas são quase de graça.** Vinte folhas a mais que a primeira custam
+143 ms somadas, ~7 ms cada. É a evidência mais direta de que o custo da tipagem
+do Modux **não** está no arquivo que o gerador escreve — está em quem o
+consome.
 
-::: tip O que o V2 cobra em troca
-No V2, `Modux.Controller(id)` é declarado como `(id: string, mode: Mode?) -> any`.
-O tipo **não chega pela chamada**. Para o `self` ser tipado, o arquivo precisa
-da anotação — é exatamente o que a coluna "V2, N sítios" mede: cada módulo faz
-`local C: T.ModX = M.Controller("ModX")`.
+### O editor nunca analisa o projeto inteiro
 
-A coluna "V2, 1 sítio" é o V2 sem essa anotação em lugar nenhum: 319 ms a 100
-módulos, com o `self` valendo `any` na maioria dos arquivos.
+Esta é a parte que mais se lê errado nesta página, então vale direto: **o
+`analyze` completo não é uma coisa que você espera.** Ele é o número do CI. O
+editor nunca faz isso.
 
-Então a troca é essa, e é direta: **o V2 é barato de analisar porque você
-escreve a anotação; o V3 é caro de analisar porque ele escreve por você.**
-:::
+O `luau-lsp` verifica **o arquivo que você está editando**, e só. Ele não varre
+as 21 folhas nem os outros 21 módulos porque você abriu um arquivo — não há
+varredura nenhuma.
 
-### Em qual coluna o V2 real vive
+Mas o arquivo que você abriu requer o Manifest, e o Manifest requer todas as
+folhas do lado dele. Então o custo chega por dentro, e é por isso que a tabela
+acima tem a linha mais importante da página:
 
-A tabela acima compara duas colunas de V2, e vale saber qual delas descreve
-código que existe. Medido num jogo V2 real em disco, 142 arquivos `.luau` sob
-`src/`, dos quais 53 são do autor e 89 são o framework:
-
-| | |
+| | tempo |
 |---|---:|
-| módulos declarados | 31 |
-| declarações **com** anotação de tipo | **0** |
-| arquivos do autor com `--!strict` | 8 de 53 |
-| arquivos do autor sem modo nenhum | 45 de 53 |
+| um módulo, sozinho | 3 439 ms |
+| o projeto inteiro, 61 arquivos | 5 599 ms |
 
-Nenhuma anotação, em lugar nenhum. E `ControllerFn` é
-`(id: string, mode: Mode?) -> any` (`src/shared/Modux/Types.luau`), então o
-`self` vale `any` nos 31.
+**Abrir um arquivo já custa 61% do projeto inteiro.** Não porque o editor
+analisou o resto, mas porque aquele um arquivo puxa a cadeia de tipos toda.
 
-O teste que fecha a questão, numa cópia do projeto: troquei uma chamada por
-`self.CampoQueNaoExiste:MetodoInventado()` e, junto, pus um erro de controle
-que não depende de `self` nenhum — `local controle: number = "isso e string"`.
+Isso soa ruim e é a melhor notícia da página, por um motivo: **é pago uma vez.**
+O servidor sobe, resolve essa cadeia, e fica com ela em memória. Toda edição
+seguinte reaproveita — e é por isso que o autocomplete responde abaixo de 1 ms
+(ver abaixo) num projeto cujo `analyze` completo leva segundos.
 
-```
-TypeError total: 2384   (antes: 2384)
-HitController.luau: (nada)
-```
+O que você sente, na prática:
 
-Nenhum dos dois foi reportado, porque o arquivo não declara `--!strict`.
+- **Ao abrir o projeto:** alguns segundos até a tipagem responder. Uma vez.
+- **Digitando:** abaixo de 1 ms.
+- **No CI:** o `analyze` completo, e esse é o único lugar onde os números
+  grandes desta página aparecem.
 
-::: danger A comparação de 36× é generosa com o V2
-O padrão que a coluna "V2, N sítios" mede — `local C: T.ModX = M.Controller("ModX")`
-com `--!strict` — **não aparece uma única vez** nesse projeto. O V2 real está na
-coluna "1 sítio", e mesmo essa é medida em strict, que o projeto quase não usa.
-
-A frase acima ("o V2 é barato porque você anota") continua certa, mas a prática
-é mais dura: **você não anota**. O V2 é barato porque não está verificando. O
-projeto carrega 2 384 `TypeError` em pé e um `number = "string"` que ninguém vê.
-
-Isso não absolve o V3. Os 19,5 s e o muro entre 100 e 150 são reais e
-reproduzidos. Só delimita o que a comparação diz: é o V3 tipando tudo contra um
-V2 que, como de fato é escrito, tipa quase nada.
+::: tip No CI, analise tudo de uma vez
+Um arquivo por processo pagaria os 1,6 s de definitions **61 vezes** — mais de
+97 s só de linha de base, antes de qualquer trabalho útil. Em lote, paga-se
+uma. Quebrar a análise em jobs multiplica a constante por job.
 :::
 
-::: warning Não compare com os números sintéticos
-Analisar esse projeto inteiro leva 9,8 s, e esse número **não** entra em
-nenhuma tabela desta página. São 142 arquivos com stack de rede, tipos de
-`Instance` e 89 arquivos de framework — carga diferente de tudo que está sendo
-comparado aqui. Serve só para dizer que rodou e que os erros injetados não
-apareceram.
-:::
+### Onde isso vira problema
 
-### Autocomplete: nenhum dos dois é sentido
+Os ~95 ms por módulo acima não são constantes: eles dependem de **quantas
+entradas o Manifest tem**. Medido em duas árvores sintéticas, analisando só os
+módulos e descontando a linha de base:
 
-Mediana quente de `textDocument/completion`, 7 chamadas, descartando a primeira:
+| Manifest | custo por módulo | total |
+|---|---:|---:|
+| 100 entradas | 223 ms | 22,3 s |
+| 150 entradas | 533 ms | 80,0 s |
 
-| N | V2, N sítios | V3, N sítios |
+O N cresceu 1,5× e o custo **por módulo** cresceu 2,4×. Aí está o mecanismo
+inteiro: cada `Modux.Controller("X")` resolve o Manifest do seu lado; Manifest
+maior, sítio mais caro; e existem N sítios. **N × custo(N)**, com o custo já
+crescendo mais que linear — por isso a curva fica perto de N³, não de N².
+
+Na mesma árvore de 150, o acúmulo por arquivo é limpo:
+
+| arquivos analisados | tempo | `too complex` |
 |---:|---:|---:|
-| 10 | 5,9 ms | 0,5 ms |
-| 25 | 5,3 ms | 0,5 ms |
-| 50 | 5,6 ms | 0,7 ms |
-| 100 | 6,3 ms | 0,9 ms |
+| 1 | 3 160 ms | 0 |
+| 10 | 7 197 ms | 1 |
+| 50 | 29 604 ms | 10 |
+| 150 | 81 706 ms | 26 |
 
-Os dois estão muito abaixo do que se percebe digitando, e nenhum dos dois cresce
-com N de forma relevante.
+Linear no número de arquivos, a ~0,53 s cada. Não existe um arquivo
+patológico: são 150 arquivos custando meio segundo cada.
 
-::: warning Não leia isso como "o V3 é 7x mais rápido"
-As duas superfícies têm tamanhos diferentes: o `self` do V2 devolve 17 membros
-nesse ponto e o do V3 devolve 5, porque no V3 os métodos do framework chegam
-pela metatable. Menos item para montar é menos trabalho.
-
-O que a tabela sustenta é mais modesto e mais útil: **o muro do V3 é o `analyze`
-em lote, não a digitação.** Quem sente 19 segundos é o CI, não quem está
-escrevendo.
+::: warning Esses 81 s já são com o solver desistindo
+26 dos 150 arquivos terminaram em `Code is too complex to typecheck`. O solver
+bateu no limite interno e parou. Se fosse até o fim, custaria mais.
 :::
+
+### Autocomplete
+
+Mediana quente de `textDocument/completion`, 7 chamadas, descartando a
+primeira:
+
+| N | V3 |
+|---:|---:|
+| 10 | 0,5 ms |
+| 25 | 0,5 ms |
+| 50 | 0,7 ms |
+| 100 | 0,9 ms |
+
+Muito abaixo do que se percebe digitando, e não cresce com N de forma
+relevante. **O muro do V3 é o `analyze` em lote, não a digitação.** Quem sente
+os segundos é o CI, não quem está escrevendo.
 
 ## Onde mora o custo
 
@@ -182,13 +189,12 @@ E, para a escala, medidos na **mesma** rodada:
 | referência | líquido |
 |---|---:|
 | Luau puro, plano | 106 ms |
-| V2, 1 sítio | 69 ms |
 
 ::: warning Abaixo de ~500 ms, não leve a vírgula a sério
 As duas tabelas acima vieram de rodadas diferentes, cada uma com a sua linha de
-base. O mesmo `v2` a N=100 aparece como 69 ms numa e 319 ms na outra — não porque
-mudou, mas porque subtrair uma constante de 1,8 s de um total de 1,9 s deixa um
-resto com erro relativo enorme.
+base. Uma mesma variante barata pode aparecer como 69 ms numa e 319 ms na
+outra — não porque mudou, mas porque subtrair uma constante de 1,8 s de um
+total de 1,9 s deixa um resto com erro relativo enorme.
 
 Comparar números pequenos **entre** tabelas não vale; comparar dentro de uma
 mesma tabela vale. E a conclusão desta seção não depende disso: 16,8 s contra
@@ -281,45 +287,6 @@ declarado — não é o vilão.
 módulos de service e controller somando os dois lados, ou seja ~23 por lado.
 Folga de 4 a 5×.
 
-## O que o V3 compra com isso
-
-O custo de análise é o lado ruim da troca. O lado bom é medível também.
-
-### Superfície gerada
-
-Projetos reais, cada um no seu repositório, contando só o que o gerador escreve:
-
-| | módulos | arquivos gerados | linhas | bytes | por módulo |
-|---|---:|---:|---:|---:|---:|
-| Modux V2 | 13 | 9 | 1 142 | 38 967 | 2 998 B |
-| Modux V3 (template) | 11 | 16 | 291 | 8 470 | **770 B** |
-
-O V2 concentra tudo em poucos arquivos grandes: `CoreTypes.luau` com 351 linhas,
-`ExtraTypes.luau` com 277, `ComponentTypes.luau` com 138. Cada um desses
-re-declara a lista inteira de aliases no topo. O V3 espalha em uma folha pequena
-por módulo, e a folha só carrega a superfície pública daquele módulo.
-
-São **3,9× menos bytes gerados por módulo**, e é isso que aparece no diff quando
-você renomeia um método.
-
-### O loop de geração
-
-O Watcher do V2 é TypeScript e regenera o projeto inteiro a cada mudança:
-`generateTypes` com mediana de **967 ms** em 13 módulos, mais 400 ms de debounce,
-ou seja **~1,37 s por save** até o tipo estar certo na tela. O `modux` do V3 é um
-binário e escreve por módulo.
-
-É a diferença entre "o tipo aparece" e "o tipo aparece daqui a um segundo e
-meio", e é a que se sente o dia inteiro — ao contrário do `analyze`, que se paga
-uma vez por commit.
-
-### Ferramenta ausente
-
-Apagando os tipos gerados e analisando o que sobra: V2 acusa **1 632**
-`TypeError`, V3 acusa **15**. Número absoluto, não normalizado pelo tamanho do
-projeto, então serve para ver a ordem de grandeza e nada mais: no V2 o código
-escrito à mão depende dos tipos gerados para compilar; no V3, quase não.
-
 ## Runtime
 
 ::: warning Estes números não têm script neste repositório
@@ -347,7 +314,7 @@ python tools/bench/bench_estilos.py 10 25 50 100
 ```
 
 ```sh
-BENCH_REPS=5 BENCH_ESTILOS=v2sites,v3sites python tools/bench/bench_estilos.py 200
+BENCH_REPS=5 BENCH_ESTILOS=v3sites python tools/bench/bench_estilos.py 200
 ```
 
 Requisitos e o que cada variável de ambiente faz estão no
@@ -357,12 +324,11 @@ Requisitos e o que cada variável de ambiente faz estão no
 
 - **O Studio.** Tudo aqui roda no `luau-lsp` de linha de comando. O editor tem o
   próprio cache e o próprio agendamento, e o veredito final é ele.
-- **Projeto real contra projeto real.** O V2 em disco tem 13 módulos, uma stack
-  de rede e tipos de `Instance`; o V3 tem outra carga. Comparar os dois
-  diretamente mediria a diferença de conteúdo, não de estratégia. Por isso tudo
-  que compara V2 e V3 nesta página é sintético e com a carga igualada.
 - **Memória.** Nem de análise nem de runtime.
-- **N acima de 200.** Existe uma medição antiga sugerindo que o V3 volta a ganhar
-  perto de N=1000, quando a union de `Import` do V2 vira ela própria O(N²). Não
-  foi refeita com este harness e não entra aqui — e, de todo modo, o V3 já não
-  compila a N=150, então a comparação nessa faixa seria acadêmica.
+- **N acima de 200.** O muro já aparece a N=150, então medir além disso diria
+  pouco: o solver para de responder e o projeto deixa de ter tipagem confiável
+  muito antes.
+- **Outros frameworks.** Esta página mede o Modux V3 contra ele mesmo — o custo
+  de cada peça da tipagem e o que acontece quando o projeto cresce. Comparar com
+  outro framework exigiria igualar não só a carga, mas o quanto cada um se
+  propõe a verificar, e isso é uma medição diferente.
