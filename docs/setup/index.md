@@ -30,7 +30,7 @@ O `rojo` aí em cima é o transporte para o Studio, e é o padrão. Se vocês fo
 dois na mesma place, troque-o (ou some-o) por uma das alternativas:
 
 ```toml
-syncteam = "victorcarmo2003/SyncTeam@0.2.5"   # sync nos dois sentidos, com lease
+syncteam = "victorcarmo2003/SyncTeam@0.2.6"   # sync nos dois sentidos, com lease
 ```
 
 O [SyncTeam](/setup/SyncTeam) usa o mesmo `default.project.json` e o mesmo

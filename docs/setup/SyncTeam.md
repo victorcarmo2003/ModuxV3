@@ -18,8 +18,30 @@ syncteam extension install     # extensão do VS Code
 No `rokit.toml`:
 
 ```toml
-syncteam = "victorcarmo2003/SyncTeam@0.2.5"
+syncteam = "victorcarmo2003/SyncTeam@0.2.6"
 ```
+
+E um `syncteam.json` ao lado do `default.project.json`, declarando onde cada
+lado mora na árvore:
+
+```json
+{
+  "layout": {
+    "root": "src",
+    "sides": {
+      "client": "StarterPlayer/StarterPlayerScripts/client",
+      "server": "ServerScriptService/server",
+      "shared": "ReplicatedStorage/shared"
+    }
+  }
+}
+```
+
+Ele já vem no template. Serve para **uma coisa só**: quando alguém cria uma
+feature NOVA dentro do Studio, o SyncTeam precisa saber onde pendurá-la no
+disco — e o `default.project.json` não tem como dizer, porque o
+[Rogen](/setup/Rogen) emite um ponto de montagem por feature e a feature
+ainda não existe. Ver [Feature nova nascida no Studio](#feature-nova).
 
 Depois é abrir o Studio, achar o painel **Sync Team** na aba Plugins e clicar
 **CONNECT**.
@@ -94,6 +116,35 @@ Ou seja, o arranjo de tipagem é exatamente o do fluxo Rojo — inclusive o
 [crash do `sourcemap --watch` ao apagar pasta com unlink](/setup/Rojo#crash),
 que é do Rojo e continua valendo aqui.
 
+### Feature nova nascida no Studio {#feature-nova}
+
+Criar um módulo no Studio dentro de uma feature que **já existe** sempre
+funcionou: `ServerScriptService.server.Vital.NovoService` cai em
+`src/Vital/server/NovoService.luau`, porque o ponto de montagem
+`...server.Vital` existe no project file.
+
+Uma feature **nova** é outra história. O rogen emite um ponto de montagem por
+feature e lado, e nenhum cobre `ServerScriptService.server` sozinho — então
+`...server.NovaFeature.NovoService` não casa com prefixo nenhum. Até a
+**0.2.5** o arquivo simplesmente não chegava ao disco, e o único sinal era
+uma linha de `info` no Output que ninguém lê enquanto mexe no Studio.
+
+É galinha-e-ovo: o rogen não mapeia a pasta porque ela não existe no disco, e
+o disco não a ganha porque não há mapeamento. O `syncteam.json` quebra o
+impasse — o SyncTeam lê a declaração e coloca a feature ele mesmo, e o rogen
+mapeia na passada seguinte.
+
+::: tip É último recurso, não uma segunda fonte de verdade
+A declaração só é consultada quando **nenhum** ponto de montagem casa.
+Existindo montagem, ela ganha sempre. Sem essa regra o arquivo viraria uma
+terceira descrição do mesmo layout — o rogen crava a convenção, o project
+file a materializa — e três descrições divergem no primeiro caso estranho.
+
+Na partida o SyncTeam ainda confere cada lado declarado contra os mounts
+reais. Se alguém mudar a convenção e esquecer do json, o aviso sai no
+primeiro boot em vez de no primeiro arquivo perdido.
+:::
+
 ## Duas pessoas ao mesmo tempo
 
 O caminho é o mesmo do Azul, e vale repetir porque confunde: o SyncTeam **não
@@ -115,6 +166,13 @@ o Rojo nem o Azul têm:
 - **Presença.** Cursor e seleção do colega aparecem no seu editor.
 - **Eleição de líder** entre os Studios, para que só um faça a limpeza de
   estado compartilhado.
+- **Aviso de dependência divergente.** `Packages/` fica fora do sync de
+  propósito — dois `wally.lock` diferentes empurrariam a dependência um do
+  outro sem querer. O efeito colateral é que uma lib nova nunca atravessa: o
+  teu código chega no Studio do colega requerendo algo que só existe na tua
+  máquina. Cada lado publica uma impressão digital do próprio `wally.toml`, e
+  quem divergir recebe um aviso para rodar `wally install`. Ninguém instala
+  nada por você.
 
 ::: danger O que a lease NÃO cobre
 A lease morre 2 segundos depois de você parar de digitar

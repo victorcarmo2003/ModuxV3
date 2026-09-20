@@ -133,6 +133,27 @@ lease nunca mais conseguia ir embora. Sintoma sempre silencioso.
 Entrou também o seletor **Individual / Teams** no painel do plugin — por
 enquanto só UI, nada no fluxo de sincronização lê o modo ainda.
 
+### 0.2.6 {#syncteam-0-2-6}
+
+[release](https://github.com/victorcarmo2003/SyncTeam/releases/tag/v0.2.6)
+· 20/09
+
+**O SyncTeam não sincronizava projeto Modux nenhum.** `parseMountPoints` só
+aceitava `$path` como string, e o Rojo aceita duas formas — a string e
+`{ "optional": "..." }`, que não falha se a pasta ainda não existe. O rogen
+emite **todo** mount de código na forma opcional, então o objeto era pulado
+sem erro nem aviso.
+
+Medido: o harness leu **3 pontos de montagem onde havia 23**. Sobravam só os
+`Packages` escritos à mão. Um projeto sem rogen nunca sofreu — é por isso que
+o bug atravessou tanto tempo.
+
+Junto: uma feature nova criada no Studio passou a ter destino no disco, via
+`syncteam.json` (ver [SyncTeam](/setup/SyncTeam#feature-nova)), e um aviso
+quando o colega mexe nas dependências Wally — `Packages/` fica fora do sync,
+então uma lib nova nunca atravessava e o outro lado só via
+`not a valid member`.
+
 ### 0.2.0 a 0.2.4 {#syncteam-0-2-0}
 
 03–11/08

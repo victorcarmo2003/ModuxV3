@@ -18,8 +18,30 @@ syncteam extension install     # VS Code extension
 In `rokit.toml`:
 
 ```toml
-syncteam = "victorcarmo2003/SyncTeam@0.2.5"
+syncteam = "victorcarmo2003/SyncTeam@0.2.6"
 ```
+
+And a `syncteam.json` next to `default.project.json`, declaring where each
+side lives in the tree:
+
+```json
+{
+  "layout": {
+    "root": "src",
+    "sides": {
+      "client": "StarterPlayer/StarterPlayerScripts/client",
+      "server": "ServerScriptService/server",
+      "shared": "ReplicatedStorage/shared"
+    }
+  }
+}
+```
+
+It ships with the template. It serves **one purpose**: when someone creates a
+NEW feature inside Studio, SyncTeam needs to know where to hang it on disk —
+and `default.project.json` can't say, because [Rogen](/en/setup/Rogen) emits
+one mount per feature and the feature doesn't exist yet. See
+[A feature born in Studio](#feature-nova).
 
 Then open Studio, find the **Sync Team** panel under the Plugins tab and click
 **CONNECT**.
@@ -94,6 +116,35 @@ So the typing setup is exactly the Rojo one — including the
 [`sourcemap --watch` crash when a folder is unlinked](/en/setup/Rojo#crash),
 which belongs to Rojo and still applies here.
 
+### A feature born in Studio {#feature-nova}
+
+Creating a module in Studio inside a feature that **already exists** always
+worked: `ServerScriptService.server.Vital.NovoService` lands on
+`src/Vital/server/NovoService.luau`, because the `...server.Vital` mount
+exists in the project file.
+
+A **new** feature is another story. Rogen emits one mount per feature and
+side, and none of them covers `ServerScriptService.server` on its own — so
+`...server.NewFeature.NewService` matches no prefix. Up to **0.2.5** the file
+simply never reached disk, and the only sign was an `info` line in the Output
+that nobody reads while working in Studio.
+
+It's a chicken-and-egg: rogen won't map the folder because it doesn't exist
+on disk, and disk won't get it because there's no mapping. `syncteam.json`
+breaks the deadlock — SyncTeam reads the declaration and places the feature
+itself, and rogen maps it on the next pass.
+
+::: tip It's a last resort, not a second source of truth
+The declaration is only consulted when **no** mount matches. If a mount
+exists, it always wins. Without that rule the file would become a third
+description of the same layout — rogen hardcodes the convention, the project
+file materializes it — and three descriptions diverge on the first odd case.
+
+At startup SyncTeam also checks each declared side against the real mounts.
+If someone changes the convention and forgets the json, the warning shows up
+on the first boot instead of on the first lost file.
+:::
+
 ## Two people at once
 
 The path is the same as Azul's, and it's worth repeating because it confuses
@@ -115,6 +166,13 @@ What SyncTeam adds on top is a coordination layer neither Rojo nor Azul has:
 - **Presence.** Your teammate's cursor and selection show up in your editor.
 - **Leader election** between the Studios, so only one of them cleans up
   shared state.
+- **Diverged-dependency warning.** `Packages/` stays out of the sync on
+  purpose — two different `wally.lock` files would push each other's
+  dependencies by accident. The side effect is that a new library never
+  crosses: your code reaches your teammate's Studio requiring something that
+  only exists on your machine. Each side publishes a fingerprint of its own
+  `wally.toml`, and whoever diverges gets a warning to run `wally install`.
+  Nobody installs anything for you.
 
 ::: danger What the lease does NOT cover
 The lease dies 2 seconds after you stop typing (`leaseStaleAfterSeconds`). So

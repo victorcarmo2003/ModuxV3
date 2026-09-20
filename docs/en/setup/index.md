@@ -31,7 +31,7 @@ there are two of you on the same place, swap it (or add to it) with one of
 the alternatives:
 
 ```toml
-syncteam = "victorcarmo2003/SyncTeam@0.2.5"   # two-way sync, with leases
+syncteam = "victorcarmo2003/SyncTeam@0.2.6"   # two-way sync, with leases
 ```
 
 [SyncTeam](/en/setup/SyncTeam) uses the same `default.project.json` and the

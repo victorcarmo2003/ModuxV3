@@ -133,6 +133,27 @@ leave again. The symptom was always silent.
 The **Individual / Teams** selector also landed in the plugin panel — UI only
 for now, nothing in the sync flow reads the mode yet.
 
+### 0.2.6 {#syncteam-0-2-6}
+
+[release](https://github.com/victorcarmo2003/SyncTeam/releases/tag/v0.2.6)
+· Sep 20
+
+**SyncTeam wasn't syncing any Modux project.** `parseMountPoints` only
+accepted `$path` as a string, and Rojo accepts two forms — the string and
+`{ "optional": "..." }`, which doesn't fail if the folder doesn't exist yet.
+Rogen emits **every** code mount in the optional form, so the object was
+skipped with no error and no warning.
+
+Measured: the harness read **3 mounts where there were 23**. Only the
+hand-written `Packages` survived. A project without rogen never suffered from
+it — which is why the bug lasted this long.
+
+Along with it: a new feature created in Studio now has a destination on disk,
+via `syncteam.json` (see [SyncTeam](/en/setup/SyncTeam#feature-nova)), and a
+warning when a teammate changes Wally dependencies — `Packages/` stays out of
+the sync, so a new library never crossed and the other side only saw
+`not a valid member`.
+
 ### 0.2.0 to 0.2.4 {#syncteam-0-2-0}
 
 Aug 03–11
