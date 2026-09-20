@@ -240,6 +240,34 @@ superlinear in **each** side's N, not in the total.
 **The wall sits between 100 and 150 per side**, with
 `Code is too complex to typecheck`.
 
+::: tip Redone on modux 0.7.0: the wall didn't move
+0.7.0 took the type leaf out from beside the module and moved it to
+`src/Types/<side>/<Id>.luau`. The obvious question is whether that touched the
+cost. It didn't — measured A/B on the same machine in the same session, N=100
+controllers:
+
+| modux | `analyze` | errors |
+|---|---:|---:|
+| 0.6.11 | 33,742 ms | 0 |
+| 0.7.0 | 33,260 ms | 0 |
+
+Difference inside the noise. And the wall stays put: at N=150, 0.7.0 gives
+111,626 ms and 27 `too complex`, against 0 errors at N=100.
+
+This run came out ~34% above the table above (33.3 s against 25.3 s at N=100),
+and that's machine state, not a regression — the same factor shows up on both
+rows, and the A/B against 0.6.11 at that same moment settles it. That's why
+the table above wasn't rewritten: its numbers come from a rested machine, and
+comparing across runs is exactly what this page warns against.
+
+What the migration did touch was **generation**, and for the worse before it
+got better: 622 ms on 0.6.11 against 1,186 ms on 0.7.0. The cause was a sweep
+redoing `canonicalize` on every target once per file, hidden until then because
+half the files left through a shortcut that the centralized leaf removed.
+Fixed, the same measurement gives **531 ms** — faster than before the layout
+change.
+:::
+
 The synthetic harness lands in the same place by another route: at N=150, with
 generated modules and none of the real project's quirks, `v3sites` takes 80.4 s
 and reports 26 `too complex` errors. Two independent measurements, same wall.

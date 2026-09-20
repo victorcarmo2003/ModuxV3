@@ -246,6 +246,20 @@ def medir(n: int, m: int, s: int, callbacks: bool):
     escrever(CLIENTE, "StressProbe", sondar_texto(n, "local _x = 1 ")[0])
 
     rodar("rogen build", "rogen")
+    # modux 0.7.0: a folha de tipo saiu de junto do modulo e foi para
+    # src/Types/<lado>/<Id>.luau. O rogen deriva o project file da estrutura de
+    # disco e so enxerga uma pasta depois que ela tem .luau dentro, entao numa
+    # arvore onde Types/ ainda nao existe o PRIMEIRO generate escreve as folhas
+    # mas nao acha endereco de DataModel para elas:
+    #
+    #   modux: path outside default.project.json: src/Types/client/StressC0.luau
+    #
+    # A primeira passada existe so para criar as folhas; o rogen abaixo as
+    # mapeia e a segunda passada (a cronometrada) roda com o mapa completo.
+    subprocess.run([str(MODUX), "generate"], cwd=RAIZ, capture_output=True,
+                   text=True, errors="replace")
+    rodar("rogen build", "rogen")
+
     t0 = time.perf_counter()
     g = subprocess.run([str(MODUX), "generate"], cwd=RAIZ, capture_output=True,
                        text=True, errors="replace")
@@ -254,10 +268,20 @@ def medir(n: int, m: int, s: int, callbacks: bool):
         print(f"  ABORTA: modux generate saiu {g.returncode}: {(g.stderr or '').strip()[:300]}")
         return
 
-    esperado = (n + m + 1 + s) * 2
+    # Ate o modux 0.6.11 cada modulo eram DOIS arquivos dentro de Stress, o
+    # init.luau e o Type.luau ao lado. Na 0.7.0 a folha mudou de lugar, entao
+    # Stress guarda um arquivo por modulo e Types/ guarda o outro. Conferir os
+    # dois lados e melhor que o `* 2` de antes: pega tanto modulo que nao foi
+    # escrito quanto folha que nao foi gerada.
+    esperado = n + m + 1 + s
     achado = len(list((RAIZ / "src" / "Stress").rglob("*.luau")))
     if achado != esperado:
-        print(f"  ABORTA: esperava {esperado} arquivos em Stress, achei {achado}")
+        print(f"  ABORTA: esperava {esperado} modulos em Stress, achei {achado}")
+        return
+
+    folhas = len(list((RAIZ / "src" / "Types").rglob("*.luau")))
+    if folhas != esperado:
+        print(f"  ABORTA: esperava {esperado} folhas em Types, achei {folhas}")
         return
 
     rodar("rojo sourcemap default.project.json -o sourcemap.json", "rojo")

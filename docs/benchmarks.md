@@ -235,6 +235,34 @@ N de **cada** lado, não no total.
 
 **O muro fica entre 100 e 150 por lado**, com `Code is too complex to typecheck`.
 
+::: tip Refeito no modux 0.7.0: o muro não andou
+A 0.7.0 tirou a folha de tipo de junto do módulo e a levou para
+`src/Types/<lado>/<Id>.luau`. A pergunta óbvia é se isso mexeu no custo. Não
+mexeu — medido em A/B na mesma máquina e na mesma sessão, N=100 controllers:
+
+| modux | `analyze` | erros |
+|---|---:|---:|
+| 0.6.11 | 33 742 ms | 0 |
+| 0.7.0 | 33 260 ms | 0 |
+
+Diferença dentro do ruído. E o muro segue no mesmo lugar: a N=150 a 0.7.0 dá
+111 626 ms e 27 `too complex`, contra 0 erro a N=100.
+
+Os números desta rodada saíram ~34% acima dos da tabela acima (33,3 s contra
+25,3 s a N=100), e isso é estado de máquina, não regressão — o mesmo fator
+aparece nas duas linhas, e o A/B contra a 0.6.11 no mesmo instante fecha a
+questão. É por isso que a tabela acima não foi reescrita: os números dela são
+de uma máquina descansada, e comparar entre rodadas é justamente o que esta
+página avisa para não fazer.
+
+O que a migração mexeu foi a **geração**, e para pior antes de melhorar: 622 ms
+na 0.6.11 contra 1 186 ms na 0.7.0. A causa era uma varredura que refazia o
+`canonicalize` de todos os alvos uma vez por arquivo, escondida até então
+porque metade dos arquivos saía por um atalho que a folha centralizada
+eliminou. Corrigido, a mesma medição dá **531 ms** — mais rápido que antes da
+mudança de layout.
+:::
+
 O harness sintético chega no mesmo lugar por outro caminho: a N=150, com módulos
 gerados e nenhuma das particularidades do projeto real, o `v3sites` leva 80,4 s e
 acusa 26 erros `too complex`. Duas medições independentes, mesmo muro.
