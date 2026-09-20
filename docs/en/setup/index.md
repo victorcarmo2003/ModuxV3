@@ -25,6 +25,19 @@ rogen = "ldgerrits/rogen@1.4.4"
 modux = "victorcarmo2003/modux@0.6.11"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
+
+The `rojo` up there is the transport to Studio, and it's the default. If
+there are two of you on the same place, swap it (or add to it) with one of
+the alternatives:
+
+```toml
+syncteam = "victorcarmo2003/SyncTeam@0.2.5"   # two-way sync, with leases
+```
+
+[SyncTeam](/en/setup/SyncTeam) uses the same `default.project.json` and the
+same `init.luau`, so nothing else on this page changes — only the command
+left running in place of `rojo serve`. [Azul](/en/setup/Azul) also solves two
+people, but asks for a different disk layout.
 And finally run — updating rokit first, if you need to — and install:
 ```sh
 rokit update                        # update if needed
@@ -46,10 +59,12 @@ rogen watch
 modux watch
 ```
 
-And Rojo, which also runs the whole time:
+And the transport, which also runs the whole time — `rojo serve`, or the
+daemon of whichever alternative you picked:
 
 ```sh
-rojo serve
+rojo serve                     # Rojo flow
+syncteam start --dir .         # SyncTeam flow
 ```
 
 The sourcemap doesn't belong here: luau-lsp already keeps it on its own, and a

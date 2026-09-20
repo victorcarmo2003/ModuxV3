@@ -117,6 +117,32 @@ Não há `rogen` nem `rojo serve` aqui: o Azul é o transporte e o sourcemap é
 dele. A flag `--sourcemap` é o que impede o modux de reconstruir o mapa por
 cima — ver [Azul](/setup/Azul#o-modux-com-o-azul).
 
+### `syncteam` — os dois sentidos, mesmo project file
+
+Para quando vocês são dois na mesma place e querem manter a arquitetura por
+feature — ver [SyncTeam](/setup/SyncTeam).
+
+| tarefa | |
+|---|---|
+| `rogen watch` | o **mesmo** do fluxo Rojo |
+| `modux watch` | o **mesmo** do fluxo Rojo, sem flag nenhuma |
+| `syncteam daemon` | `syncteam start --dir .`, no lugar do `rojo serve` |
+
+```json
+{
+	"label": "syncteam",
+	"dependsOn": ["rogen watch", "modux watch", "syncteam daemon"],
+	"dependsOrder": "parallel",
+	"group": "build"
+}
+```
+
+Os dois watchers são reaproveitados de propósito: o SyncTeam fala a convenção
+do Rojo (`default.project.json`, `init.luau`) em vez de uma própria, então os
+comandos são idênticos e só o transporte muda. Diferente do Azul, aqui **não**
+existe `--sourcemap` — o SyncTeam não gera mapa nenhum e o luau-lsp continua
+dono do dele.
+
 ::: tip A tarefa `dev` continua existindo
 Ela virou apelido de `rojo`, para não quebrar quem já tem o hábito.
 :::
@@ -136,7 +162,7 @@ Server**.
 :::
 
 ::: tip Dica
-`CTRL + SHIFT + P` e `Tasks: Run Task` e por fim `rojo` ou `azul`
+`CTRL + SHIFT + P` e `Tasks: Run Task` e por fim `rojo`, `azul` ou `syncteam`
 
 Como `rojo` é a tarefa de build padrão, `CTRL + SHIFT + B` sobe ela direto.
 :::
@@ -147,7 +173,8 @@ watcher que continua rodando ainda usa a versão antiga e vai **reescrever** os
 arquivos gerados com o comportamento antigo, em silêncio, por cima do que você
 acabou de gerar.
 
-Reinicie a tarefa (`rojo` ou `azul`) depois de atualizar qualquer ferramenta.
+Reinicie a tarefa (`rojo`, `azul` ou `syncteam`) depois de atualizar qualquer
+ferramenta.
 :::
 
 ## .luaurc

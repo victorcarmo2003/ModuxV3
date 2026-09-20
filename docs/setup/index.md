@@ -22,6 +22,18 @@ rogen = "ldgerrits/rogen@1.4.4"
 modux = "victorcarmo2003/modux@0.6.11"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
+
+O `rojo` aí em cima é o transporte para o Studio, e é o padrão. Se vocês forem
+dois na mesma place, troque-o (ou some-o) por uma das alternativas:
+
+```toml
+syncteam = "victorcarmo2003/SyncTeam@0.2.5"   # sync nos dois sentidos, com lease
+```
+
+O [SyncTeam](/setup/SyncTeam) usa o mesmo `default.project.json` e o mesmo
+`init.luau`, então o resto desta página não muda — só o comando que fica
+rodando no lugar do `rojo serve`. O [Azul](/setup/Azul) também resolve duas
+pessoas, mas pede outra estrutura de disco.
 E por fim executar, se for necessário, atualizar o rokit e instalar:
 ```sh
 rokit update                        # atualizar se necessário
@@ -43,10 +55,12 @@ rogen watch
 modux watch
 ```
 
-E o Rojo, que também roda o tempo todo:
+E o transporte, que também roda o tempo todo — `rojo serve`, ou o daemon da
+alternativa que você escolheu:
 
 ```sh
-rojo serve
+rojo serve                     # fluxo Rojo
+syncteam start --dir .         # fluxo SyncTeam
 ```
 
 O sourcemap não entra aqui: o luau-lsp já o mantém sozinho, e uma segunda

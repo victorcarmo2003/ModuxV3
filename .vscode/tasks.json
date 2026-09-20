@@ -100,6 +100,44 @@
 			"problemMatcher": []
 		},
 
+		// --- fluxo SyncTeam: os dois sentidos, sobre o MESMO project file ----
+		//
+		// Reaproveita `rogen watch` e `modux watch` do fluxo Rojo de proposito:
+		// os comandos sao identicos, porque o SyncTeam fala a convencao do Rojo
+		// (default.project.json, init.luau) em vez de uma propria. So o
+		// transporte muda — sai `rojo serve`, entra o daemon.
+		//
+		// O `group` do painel tambem e "rojo": e so a chave de agrupamento de
+		// terminal do VS Code, e mante-la igual faz os tres paineis deste fluxo
+		// abrirem lado a lado com os watchers que ele reusa.
+		//
+		// O sourcemap continua sendo do luau-lsp: o SyncTeam nao gera nenhum, e
+		// ignora o sourcemap.json da raiz na hora de sincronizar.
+
+		{
+			"label": "syncteam daemon",
+			"type": "shell",
+			"command": "syncteam start --dir .",
+			"isBackground": true,
+			"presentation": {
+				"panel": "dedicated",
+				"group": "rojo"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "syncteam",
+			"detail": "rogen + modux + syncteam. Os dois sentidos, com lease por arquivo.",
+			"dependsOn": [
+				"rogen watch",
+				"modux watch",
+				"syncteam daemon"
+			],
+			"dependsOrder": "parallel",
+			"group": "build",
+			"problemMatcher": []
+		},
+
 		// A tarefa antiga continua existindo e aponta para o fluxo Rojo, para
 		// nao quebrar quem ja tem o habito do CTRL+SHIFT+B ou um atalho seu.
 		{

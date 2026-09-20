@@ -215,8 +215,13 @@ um projeto inteiro.
 
 Depende do que compartilhado quer dizer, e as duas respostas são opostas.
 
-**Vocês dois digitando ao mesmo tempo, na mesma sessão:** Azul. É o único
-caminho, e funciona.
+**Vocês dois digitando ao mesmo tempo, na mesma sessão:** Azul ou
+[SyncTeam](/setup/SyncTeam). Os dois funcionam, e os dois atravessam pelo Team
+Create. A escolha é de custo: o Azul pede o disco espelhado e abre mão do
+`init.luau`; o SyncTeam mantém o `default.project.json` e a arquitetura por
+feature, mas é mais novo. E no caso dos dois no mesmo arquivo, o Azul diverge
+em silêncio e o SyncTeam converge na última escrita — perder uma edição
+sabendo é melhor que ter duas verdades sem saber.
 
 **Um time trabalhando no mesmo código ao longo do tempo:** Rojo com git. O
 argumento é a medição acima: no Azul, dois no mesmo arquivo perdem trabalho em

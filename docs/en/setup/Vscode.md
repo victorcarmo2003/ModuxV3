@@ -121,6 +121,32 @@ sourcemap is its own. The `--sourcemap` flag is what stops modux from
 rebuilding the map over it — see
 [Azul](/en/setup/Azul#modux-with-azul).
 
+### `syncteam` — both directions, same project file
+
+For when there are two of you on the same place and you want to keep the
+feature-based architecture — see [SyncTeam](/en/setup/SyncTeam).
+
+| task | |
+|---|---|
+| `rogen watch` | the **same** one from the Rojo flow |
+| `modux watch` | the **same** one from the Rojo flow, no flags |
+| `syncteam daemon` | `syncteam start --dir .`, in place of `rojo serve` |
+
+```json
+{
+	"label": "syncteam",
+	"dependsOn": ["rogen watch", "modux watch", "syncteam daemon"],
+	"dependsOrder": "parallel",
+	"group": "build"
+}
+```
+
+The two watchers are reused on purpose: SyncTeam speaks the Rojo convention
+(`default.project.json`, `init.luau`) rather than one of its own, so the
+commands are identical and only the transport changes. Unlike Azul, there is
+**no** `--sourcemap` here — SyncTeam generates no map at all and luau-lsp
+stays the owner of its own.
+
 ::: tip The `dev` task still exists
 It became an alias for `rojo`, so nobody's muscle memory breaks.
 :::
@@ -140,7 +166,7 @@ Server**.
 :::
 
 ::: tip Tip
-`CTRL + SHIFT + P`, then `Tasks: Run Task`, then `rojo` or `azul`
+`CTRL + SHIFT + P`, then `Tasks: Run Task`, then `rojo`, `azul` or `syncteam`
 
 Since `rojo` is the default build task, `CTRL + SHIFT + B` brings it up
 directly.
@@ -151,7 +177,7 @@ The process loads the binary the moment it comes up. After a `rokit update`, a
 watcher still running is still on the old version and will **rewrite** the
 generated files with the old behaviour, silently, over what you just generated.
 
-Restart the task (`rojo` or `azul`) after updating any tool.
+Restart the task (`rojo`, `azul` or `syncteam`) after updating any tool.
 :::
 
 ## .luaurc

@@ -217,8 +217,13 @@ whole project.
 
 It depends on what shared means, and the two answers are opposites.
 
-**The two of you typing at the same time, in the same session:** Azul. It's the
-only path, and it works.
+**The two of you typing at the same time, in the same session:** Azul or
+[SyncTeam](/en/setup/SyncTeam). Both work, and both cross machines through
+Team Create. The choice is about cost: Azul asks for the mirrored disk and
+drops `init.luau`; SyncTeam keeps `default.project.json` and the
+feature-based architecture, but is newer. And when two people hit the same
+file, Azul diverges silently while SyncTeam converges on the last write —
+losing an edit and knowing it beats having two truths and not knowing.
 
 **A team working on the same code over time:** Rojo with git. The argument is
 the measurement above: with Azul, two people in the same file lose work
