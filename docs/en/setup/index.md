@@ -22,7 +22,7 @@ Then open the rokit.toml file and paste:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/ModuxWatcher@0.7.0"
+modux = "victorcarmo2003/ModuxWatcher@0.7.1"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -49,8 +49,31 @@ Extras:
 wally install     # if the project has dependencies
 rogen build       # generates default.project.json from the folders
 modux generate    # generates the type leaves and the Manifest
+rogen build       # again, only the FIRST time — see below
+modux generate
 rojo serve        # connects to Studio
 ```
+
+::: warning Only on the project's first generation
+That repeated pair isn't a mistake. Since modux **0.7.0** the type leaves live
+in `src/Types/`, and `rogen` derives `default.project.json` from the folder
+structure — it only sees a folder once that folder holds a `.luau`. In a
+project where `src/Types/` doesn't exist yet, the first `modux generate`
+writes the leaves but finds no DataModel address for them:
+
+```
+modux: path outside default.project.json: src/Types/client/MyController.luau
+```
+
+The next `rogen build` maps them, and the second `modux generate` closes it.
+From the second time on, one pass is enough.
+
+**Cloning the template never hits this** — the leaves are committed there, so
+the first `rogen build` already sees the folder.
+
+And the **watchers** don't hit it either: `rogen watch` and `modux watch` run
+together, so the map completes itself on the next tick.
+:::
 
 While developing, the two watchers replace the two `build`/`generate`:
 

@@ -22,7 +22,7 @@ Em seguida abrir o arquivo rokit.toml, colar:
 wally = "UpliftGames/wally@0.3.2"
 rojo = "rojo-rbx/rojo@7.7.0"
 rogen = "ldgerrits/rogen@1.4.4"
-modux = "victorcarmo2003/ModuxWatcher@0.7.0"
+modux = "victorcarmo2003/ModuxWatcher@0.7.1"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.6.2"
 ```
 
@@ -48,8 +48,32 @@ Extras:
 wally install     # se o projeto tem dependências
 rogen build       # gera o default.project.json a partir das pastas
 modux generate    # gera as folhas de tipo e o Manifest
+rogen build       # de novo, só na PRIMEIRA vez — ver abaixo
+modux generate
 rojo serve        # conecta no Studio
 ```
+
+::: warning Só na primeira geração do projeto
+Aquele par repetido não é engano. Desde o modux **0.7.0** as folhas de tipo
+moram em `src/Types/`, e o `rogen` deriva o `default.project.json` da
+estrutura de pastas — ele só enxerga uma pasta depois que ela tem `.luau`
+dentro. Num projeto onde `src/Types/` ainda não existe, o primeiro
+`modux generate` escreve as folhas mas não acha endereço de DataModel para
+elas:
+
+```
+modux: path outside default.project.json: src/Types/client/MeuController.luau
+```
+
+O `rogen build` seguinte mapeia, e o segundo `modux generate` fecha. Da
+segunda vez em diante uma passada basta.
+
+**Clonando o template, isso nunca acontece** — lá as folhas já vêm
+versionadas, então o primeiro `rogen build` já enxerga a pasta.
+
+E nos **watchers** também não acontece: `rogen watch` e `modux watch` rodam
+juntos, então o mapa se completa sozinho no tick seguinte.
+:::
 
 Durante o desenvolvimento, os dois watchers substituem os dois `build`/`generate`:
 
