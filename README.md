@@ -11,9 +11,11 @@
 
 ---
 
-Modux é um framework de módulos para Roblox cujo objetivo é trazer mais poder à sua tipagem e que também retorna alertas/erros fazendo com que você não tenha que ficar executando constantemente os seus códigos para achar erros.
+Modux é um framework de módulos para Roblox cujo objetivo é trazer mais poder à
+sua tipagem, e que devolve alertas e erros em tempo de análise — você não precisa
+ficar rodando o jogo para achar um erro que o editor já sabia apontar.
 
-Como por exemplo, se inserirmos o self com algum valor básico, ele vem com um type autogerado:
+Por exemplo: um valor simples atribuído ao `self` já volta com tipo gerado.
 
 
 ```lua
@@ -33,16 +35,22 @@ normal; o tipo aparece.
 
 ## Por que não só escrever na mão
 
-Bom se a tipagem automático, bootstrap tipado, requires "ciclicos" resolvidos com DI (Dependency Injection) 
-tipados ainda não te convenceu, apenas pense no trabalho que seria escrever métodos, parâmetros valores do self 
-tudo à mão, o tempo inteiro, condizentes com os valores e métodos em tempo real.
+Se tipagem automática, bootstrap tipado e requires cíclicos resolvidos com DI
+(Dependency Injection) ainda não te convenceram, pense no trabalho que seria
+escrever métodos, parâmetros e valores do `self` à mão, o tempo inteiro, mantendo
+tudo em dia com o que o código realmente faz.
 
-Esse é o motivo que fazem muitos desistirem de tipagem em luau e com isso essa ferramenta se torna perfeita para todos.
+É por isso que tanta gente desiste de tipagem em Luau — e é exatamente esse
+trabalho que o Modux tira da frente.
 
 ## Economia de tempo
-Além do strict e o apoio de typefunctions, o modux possui generic types para controllers criados além de uma tool que converte as próprias funções, parâmetros de funcões e valores simples no self para tipagem em um arquivo de Types.luau que é gerado dentro do module
+Além do `strict` e do apoio de type functions, o Modux tem tipos genéricos para
+os controllers que você cria, e uma ferramenta que converte os seus métodos, os
+parâmetros deles e os valores simples do `self` numa folha de tipo gerada para
+cada módulo.
 
-Então por exemplo ao escrever um nome como string ou uma idade como number no self, ele vem tipado em qualquer outro lugar que utilize o self:
+Escrevendo um nome como `string` ou uma idade como `number` no `self`, o campo
+vem tipado em qualquer outro lugar que toque o `self`:
 
 ```lua
 const Zombie = Modux.Controller("Zombie")
@@ -60,8 +68,9 @@ end
 ```
 
 ## Require
-O mesmo vale também para os requires inseridos no head, como por exemplo ao fazer: Require = { "Skeleton" } 
-ele tipa dentro de dependencias o module Skeleton e atribui as funções com autocomplete incluindo os parâmetros:
+O mesmo vale para o que você declara em `Require`. Com `Require = { "Skeleton" }`,
+o módulo Skeleton aparece tipado dentro de `self.Dependencies`, com autocomplete
+nos métodos e nos parâmetros:
 ```lua
 --!strict
 const Skeleton = Modux.Controller("Skeleton")
@@ -75,14 +84,16 @@ E em outro controller utilizando ele:
 const Zombie = Modux.Controller("Zombie", { Require = { "Skeleton" } })
 
 function Zombie:Heal(amount: number, target: Instance)
-	self.Dependencies.Skeleton:ShotArrow(target) -- 100% tipado
+	self.Dependencies.Skeleton:ShootArrow(target) -- tipado, sem você anotar nada
 end
 ```
 
-O modux também funciona 100% com dependências mútuas ou seja, Zombie pode requerir skeleton e skeleton pode requerir Zombie
+O Modux suporta dependências mútuas: `Zombie` pode requerer `Skeleton` e
+`Skeleton` pode requerer `Zombie`.
 
-A vantagem maior vantagem é, você não escreveu nenhum tipo. Dentro de Dependencies > Skeleton ele mostra para você exatamente 
-quais métodos tem e quais parâmetros precisa. Caso tente requerir algo que não existe, ele também acusa erro!
+A maior vantagem é que você não escreveu tipo nenhum. Dentro de `Dependencies >
+Skeleton` ele mostra exatamente quais métodos existem e quais parâmetros cada um
+pede. Declarar em `Require` um módulo que não existe também acusa erro.
 
 O truque: um gerador lê os seus módulos e escreve uma folha de tipo por módulo. O framework junta essas folhas com type functions do Luau.
 
@@ -94,14 +105,16 @@ O truque: um gerador lê os seus módulos e escreve uma folha de tipo por módul
 | **Service** | server | um por jogo | outros Services |
 | **Component** | os dois | um por `Instance` tagueada | Controllers no client, Services no server |
 
-Não há como misturar Controllers e Services, e não é convenção: um Controller que declara `Require` de um
-Service **interrompe a geração de tipagem**, com uma mensagem dizendo quem está de que lado.
-Comunicação entre lados é rede, e rede é explícita.
+Não há como misturar Controllers e Services, e não é convenção: um Controller que
+declara `Require` de um Service **interrompe a geração de tipagem**, com uma
+mensagem dizendo quem está de que lado. Comunicação entre lados é rede, e rede é
+explícita.
 
-No modux:
-Controllers vivem no Client-side
-Services vivem no Server-side
-Componentes existem para o client-side e para o server-side, porém não interagem cross-side
+No Modux:
+
+- Controllers vivem no client.
+- Services vivem no server.
+- Componentes existem nos dois lados, mas não conversam entre lados.
 
 ## Componentes
 Componente é ligado a `Instance` via CollectionService. Sem `Tag` declarada, a
@@ -123,31 +136,36 @@ end)
 
 return Highlight
 ```
-Esse script por exemplo faz com que, o que tiver a tag "Highlight" receba um Highlight
-E seja destruído após 5 segundos. Isso funciona tanto para quando a instância já começar
-o game com aquela tag quanto para com a tag sendo adicionada ao longo do game.
+Esse script faz com que toda instância com a tag `Highlight` receba um Highlight
+e seja destruída depois de 5 segundos. Vale tanto para a instância que já começa
+o jogo com a tag quanto para a tag adicionada ao longo dele.
 
 ## Ciclo de vida
 
 `OnInit` → `OnStart` → `OnTick` → `OnDestroy (componentes apenas)`.
 
-A injeção acontece antes de qualquer OnInit, o que faz dependência mútua A↔B funcionar: quando o teu código roda, tudo já existe.
+A injeção acontece antes de qualquer `OnInit`, o que faz dependência mútua A↔B
+funcionar: quando o teu código roda, tudo já existe.
 
-O loader completa todos os OnInit antes de começar qualquer OnStart, e ordena as duas fases por Priority decrescente. 
-Isso é o que permite dizer "registre no OnInit, dispare no OnStart" e ter certeza da ordem.
+O loader completa todos os `OnInit` antes de começar qualquer `OnStart`, e ordena
+as duas fases por `Priority` decrescente. É isso que permite dizer "registre no
+`OnInit`, dispare no `OnStart`" e ter certeza da ordem.
 
 ```lua
 X:OnTick(callback, tickRate, priority)   -- sem os dois: 1 Hz, priority 1
 ```
 
-O TickRate e o Priority são opcionais, o default é 1hz e prioridade 1,
-priority maior roda primeiro, e o empate desempata pela ordem de registro — determinístico, não muda quando outro módulo entra.
-O priority do tick é independente do Priority do módulo.
+O `tickRate` e o `priority` são opcionais: o padrão é 1 Hz e prioridade 1.
+`priority` maior roda primeiro, e o empate desempata pela ordem de registro —
+determinístico, não muda quando outro módulo entra. O `priority` do tick é
+independente do `Priority` do módulo.
 
 Componente tagueado pelo Studio sobe depois que todos os singletons startaram.
-`Create` é o oposto: constrói e devolve **na mesma linha**, porque `AddTag` só
-avisa no próximo frame por isso ao invés de fazer CollectionService:AddTag() e depois tentar puxar
-a instância, deve-se na verdade utilizar o método CreateComponent() que então te retorna aquele componente.
+
+Quando uma tag entra por `CollectionService:AddTag()`, o componente só nasce no
+frame seguinte — o sinal é assíncrono. Para ter o componente na hora, use
+`CreateComponent()`: ele cria a instância e devolve o componente na mesma
+chamada.
 
 ## Configuração
 
@@ -237,17 +255,17 @@ autocomplete devolve **zero item** — sem erro, sem aviso, só nada. O
 
 ---
 
-## Limites conhecidos
+## Limitações atuais
 
 **Teto de escala.** O custo de tipagem é superlinear: cada módulo resolve o
 Manifest do seu lado. Entre 100 e 150 módulos **por lado** o solver começa a
 responder `Code is too complex to typecheck`. Como Controller e Service ficam em
-Manifests separados, dividir por lado quase triplica a folga. Cinco formas de
-reorganizar os tipos foram medidas e nenhuma ganhou do desenho atual.
-
-**Sem rede.** Comunicação client/server ainda não existe. Hoje o framework
-impede a travessia, mas não oferece a ponte. Quando existir, entra como lib em
-`src/Libs`, não como parte do core.
+Manifests separados, dividir por lado quase triplica a folga — 100 módulos num
+lado só custam 25,3 s de `analyze`, e os mesmos 100 divididos custam 9,1 s.
+Cinco formas de reorganizar os tipos foram medidas; as duas que chegaram a ficar
+mais baratas perdem `Dependencies` ou `Libs` no caminho, e a mais óbvia —
+pré-computar o `self` no Manifest — não fica mais rápida, ela para de compilar.
+Os números e o método estão em [Benchmarks](https://victorcarmo2003.github.io/ModuxV3/benchmarks).
 
 **Anotação onde o gerador não adivinha.** Literal e função ele lê sozinho; o
 resto pede `::`.
@@ -256,3 +274,25 @@ resto pede `::`.
 self.Vida = 100                          -- vira number
 self.Orientacao = CFrame.new() :: CFrame -- precisa da anotação
 ```
+
+**Nem toda lib entra em `self.Libs`.** Uma lib cujo tipo contenha type function
+não reduzida derruba a tipagem do projeto inteiro. Vide e Lync caem nesse caso;
+o contorno é requerê-las direto onde se usa.
+
+## Decisões de design
+
+Estas não são limitações — são escolhas, e existem por um motivo.
+
+**Client e server são isolados.** Um Controller não alcança um Service, e a
+tentativa interrompe a geração em vez de virar um erro de runtime. Comunicação
+entre lados é rede, e rede é explícita.
+
+**Rede fica fora do core.** O framework impede a travessia mas não oferece a
+ponte, de propósito: quando existir, entra como lib em `src/Libs`, não como
+parte do core. É o que mantém o Modux publicável sem arrastar uma stack de rede
+junto.
+
+**Libs entram por injeção, não por require.** O core não conhece Promise,
+Signal nem rede — ele conhece um arquivo que o gerador escreve varrendo
+`src/Libs`. Apagar uma lib da pasta não quebra o framework: a entrada some do
+tipo e quem usava falha no lugar certo.
